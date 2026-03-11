@@ -1,0 +1,119 @@
+backend:
+  name: github
+  repo: willylondon/jamaica-basketball
+  branch: main
+
+media_folder: public/images/uploads
+public_folder: /images/uploads
+
+slug:
+  encoding: ascii
+  clean_accents: true
+
+collections:
+  # ─── Posts ────────────────────────────────────
+  - name: posts
+    label: Posts
+    label_singular: Post
+    folder: content/posts
+    create: true
+    extension: mdx
+    format: frontmatter
+    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    sortable_fields: [date, title, category]
+    summary: "{{title}} — {{date}}"
+    view_groups:
+      - { label: Category, field: category }
+      - { label: Draft, field: draft }
+    fields:
+      # ── Core fields (always visible, top of editor) ──
+      - { label: Title, name: title, widget: string, required: true }
+      - { label: Slug, name: slug, widget: string, required: true,
+          hint: "URL-friendly identifier. Example: jamaica-beats-canada" }
+      - { label: Excerpt, name: excerpt, widget: text, required: true,
+          hint: "One or two sentences for cards and SEO (max 160 chars)." }
+      - { label: Description, name: description, widget: text, required: true,
+          hint: "Longer summary for internal reference and social previews." }
+      - { label: Subheadline (Dek), name: dek, widget: text, required: false,
+          hint: "Optional subheadline displayed below the title on the article page." }
+      - { label: Featured Image, name: image, widget: image, required: true }
+      - { label: Image Alt Text, name: imageAlt, widget: string, required: true,
+          hint: "Describe the image for accessibility." }
+      - { label: Publish Date, name: date, widget: datetime, required: true }
+      - { label: Updated Date, name: updated, widget: datetime, required: false }
+      - { label: Author, name: author, widget: string, default: "Jamaica Basketball" }
+      - label: Category
+        name: category
+        widget: select
+        required: true
+        options:
+          - { label: News, value: news }
+          - { label: Opinion, value: opinion }
+          - { label: Features, value: features }
+          - { label: National Team, value: national-team }
+          - { label: High School, value: high-school }
+          - { label: Club Basketball, value: club-basketball }
+          - { label: 3x3, value: "3x3" }
+          - { label: Player Spotlight, value: player-spotlight }
+          - { label: Coach Spotlight, value: coach-spotlight }
+          - { label: Events, value: events }
+      - { label: Tags, name: tags, widget: list, required: false, allow_add: true,
+          hint: "Comma-separated tags for grouping content." }
+      - { label: Featured, name: featured, widget: boolean, default: false,
+          hint: "Pin this post to the homepage hero." }
+      - { label: Breaking, name: breaking, widget: boolean, default: false,
+          hint: "Mark as breaking news." }
+      - { label: Draft, name: draft, widget: boolean, default: false }
+      - { label: Body, name: body, widget: markdown }
+
+      # ── SEO overrides (collapsed, optional) ──
+      - { label: SEO Title, name: seoTitle, widget: string, required: false,
+          hint: "Override the page title tag. Leave blank to use the post title." }
+      - { label: SEO Description, name: seoDescription, widget: text, required: false,
+          hint: "Override meta description. Leave blank to use the excerpt." }
+      - { label: Canonical URL, name: canonicalUrl, widget: string, required: false,
+          hint: "Only set if republished from another URL." }
+      - { label: OG Image, name: ogImage, widget: image, required: false,
+          hint: "Override social sharing image. Leave blank to use featured image." }
+      - { label: Keywords, name: keywords, widget: list, required: false, allow_add: true,
+          hint: "SEO keywords. Optional — tags usually suffice." }
+
+  # ─── Pages ────────────────────────────────────
+  - name: pages
+    label: Pages
+    label_singular: Page
+    folder: content/pages
+    create: true
+    extension: mdx
+    format: frontmatter
+    slug: "{{slug}}"
+    fields:
+      - { label: Title, name: title, widget: string, required: true }
+      - { label: Slug, name: slug, widget: string, required: true }
+      - { label: Description, name: description, widget: text, required: true }
+      - { label: SEO Title, name: seoTitle, widget: string, required: false,
+          hint: "Override the page title tag." }
+      - { label: SEO Description, name: seoDescription, widget: text, required: false,
+          hint: "Override meta description." }
+      - { label: Body, name: body, widget: markdown }
+
+  # ─── Settings ─────────────────────────────────
+  - name: settings
+    label: Settings
+    files:
+      - label: General
+        name: general
+        file: content/settings/general.json
+        fields:
+          - { label: Site Title, name: siteTitle, widget: string }
+          - { label: Site Description, name: siteDescription, widget: text }
+          - { label: Site URL, name: siteUrl, widget: string }
+          - { label: Contact Email, name: contactEmail, widget: string }
+          - { label: Default OG Image, name: defaultOgImage, widget: image,
+              hint: "Fallback social sharing image." }
+          - { label: Featured Post Override, name: featuredPostSlugOverride, widget: string, required: false,
+              hint: "Slug of a post to pin as the homepage hero. Leave blank for automatic." }
+          - { label: Instagram URL, name: instagramUrl, widget: string, required: false }
+          - { label: TikTok URL, name: tiktokUrl, widget: string, required: false }
+          - { label: YouTube URL, name: youtubeUrl, widget: string, required: false }
+          - { label: X (Twitter) URL, name: xUrl, widget: string, required: false }
