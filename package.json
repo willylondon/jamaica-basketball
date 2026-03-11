@@ -6,6 +6,7 @@
     "velite:build": "velite",
     "dev": "velite && next dev",
     "build": "velite && next build",
+    "postbuild": "next-sitemap",
     "start": "next start",
     "lint": "eslint"
   },

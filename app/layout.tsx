@@ -5,6 +5,8 @@ import Footer from "@/components/layout/Footer";
 import { OrganizationJsonLd, WebSiteJsonLd } from "@/components/seo/JsonLd";
 import { SITE } from "@/lib/utils";
 
+import Script from "next/script";
+
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),
   title: {
@@ -64,6 +66,18 @@ export default function RootLayout({
         <WebSiteJsonLd />
       </head>
       <body className="min-h-screen flex flex-col bg-bg text-text antialiased">
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-BR1R18NB1V"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-BR1R18NB1V');
+          `}
+        </Script>
         <Header />
         <main className="flex-1">{children}</main>
         <Footer />

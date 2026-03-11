@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://jamaicabasketball.com
+
+# Sitemaps
+Sitemap: https://jamaicabasketball.com/sitemap.xml
