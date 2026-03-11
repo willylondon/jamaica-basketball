@@ -35,6 +35,7 @@ const posts = defineCollection({
     canonicalUrl: s.string().optional(),
     ogImage: s.string().optional(),
     keywords: s.array(s.string()).default([]),
+    toc: s.toc(),
     body: s.mdx(),
     metadata: s.metadata(),
   }),

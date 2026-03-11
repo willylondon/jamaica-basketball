@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getCategoryLabel } from "@/lib/content";
 import { formatDate } from "@/lib/utils";
+import Image from "next/image";
 import type { Post } from "@/lib/content";
 
 interface PostCardProps {
@@ -14,11 +15,13 @@ export default function PostCard({ post, priority = false }: PostCardProps) {
             {/* Image */}
             <Link href={`/posts/${post.slug}`} className="relative aspect-video overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-t from-bg/60 to-transparent z-10" />
-                <img
+                <Image
                     src={post.image}
                     alt={post.imageAlt}
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    loading={priority ? "eager" : "lazy"}
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    priority={priority}
                 />
                 {/* Category badge */}
                 <span className="absolute top-3 left-3 z-20 rounded-full bg-accent/90 px-2.5 py-1 text-[0.6875rem] font-bold uppercase tracking-wider text-black backdrop-blur-sm">

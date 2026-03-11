@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getCategoryLabel } from "@/lib/content";
 import { formatDate } from "@/lib/utils";
+import Image from "next/image";
 import type { Post } from "@/lib/content";
 
 interface PostCardFeaturedProps {
@@ -13,11 +14,13 @@ export default function PostCardFeatured({ post }: PostCardFeaturedProps) {
             <Link href={`/posts/${post.slug}`} className="block">
                 <div className="relative aspect-[16/9] md:aspect-[21/9] overflow-hidden">
                     <div className="absolute inset-0 bg-gradient-to-t from-bg via-bg/40 to-transparent z-10" />
-                    <img
+                    <Image
                         src={post.image}
                         alt={post.imageAlt}
-                        className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                        loading="eager"
+                        fill
+                        sizes="(max-width: 768px) 100vw, 100vw"
+                        className="object-cover transition-transform duration-700 group-hover:scale-105"
+                        priority
                     />
                     {/* Content overlay */}
                     <div className="absolute inset-x-0 bottom-0 z-20 p-6 md:p-10">

@@ -6,6 +6,8 @@ import Breadcrumbs from "@/components/ui/Breadcrumbs";
 import CategoryBadge from "@/components/ui/CategoryBadge";
 import PostCard from "@/components/ui/PostCard";
 import { ArticleJsonLd, BreadcrumbJsonLd } from "@/components/seo/JsonLd";
+import Image from "next/image";
+import { MDXContent } from "@/components/mdx-content";
 
 interface PageProps {
     params: Promise<{ slug: string }>;
@@ -53,21 +55,6 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     };
 }
 
-/** Extract headings from HTML string for table of contents */
-function extractHeadings(html: string): { id: string; text: string; level: number }[] {
-    const headingRegex = /<h([2-3])[^>]*id="([^"]*)"[^>]*>(.*?)<\/h[2-3]>/gi;
-    const headings: { id: string; text: string; level: number }[] = [];
-    let match;
-    while ((match = headingRegex.exec(html)) !== null) {
-        headings.push({
-            level: parseInt(match[1]),
-            id: match[2],
-            text: match[3].replace(/<[^>]+>/g, ""),
-        });
-    }
-    return headings;
-}
-
 export default async function PostPage({ params }: PageProps) {
     const { slug } = await params;
     const post = getPostBySlug(slug);
@@ -75,7 +62,13 @@ export default async function PostPage({ params }: PageProps) {
 
     const relatedPosts = getRelatedPosts(post, 3);
     const categoryLabel = getCategoryLabel(post.category);
-    const headings = extractHeadings(post.body);
+    // Cast toc as any since Typescript type might not be updated until build
+    const toc = (post as any).toc || [];
+    const headings = toc.filter((t: any) => t.depth >= 2 && t.depth <= 3).map((t: any) => ({
+      id: t.url.replace("#", ""),
+      text: t.title,
+      level: t.depth,
+    }));
     const showToc = headings.length >= 3;
 
     return (
@@ -134,11 +127,13 @@ export default async function PostPage({ params }: PageProps) {
                 </header>
 
                 {/* Featured image */}
-                <figure className="mb-8 overflow-hidden rounded-xl">
-                    <img
+                <figure className="mb-8 overflow-hidden rounded-xl relative w-full aspect-video">
+                    <Image
                         src={post.image}
                         alt={post.imageAlt}
-                        className="w-full aspect-video object-cover"
+                        fill
+                        className="object-cover"
+                        priority
                     />
                 </figure>
 
@@ -149,7 +144,7 @@ export default async function PostPage({ params }: PageProps) {
                             In This Article
                         </h2>
                         <ul className="space-y-1.5">
-                            {headings.map((h) => (
+                            {headings.map((h: any) => (
                                 <li key={h.id} className={h.level === 3 ? "ml-4" : ""}>
                                     <a
                                         href={`#${h.id}`}
@@ -164,10 +159,9 @@ export default async function PostPage({ params }: PageProps) {
                 )}
 
                 {/* Article body */}
-                <div
-                    className="article-body prose prose-invert max-w-none"
-                    dangerouslySetInnerHTML={{ __html: post.body }}
-                />
+                <div className="article-body prose prose-invert max-w-none">
+                    <MDXContent code={post.body} />
+                </div>
 
                 {/* Tags */}
                 {post.tags.length > 0 && (
