@@ -1,56 +1,53 @@
-# Jamaica Basketball — Editorial Guidelines
+# Jamaica Basketball — Editorial & SEO Guidelines
 
-## Core Rule
-All articles must be based on **verifiable real-world information**. Do not fabricate games, players, statistics, quotes, teams, events, leagues, or results.
+## Core Principle
+**Accuracy + Search Visibility.** All content must be factually verified AND SEO-optimized. Never fabricate facts to satisfy SEO.
 
-## Approved Sources
-- Official league sites, FIBA, Jamaica Basketball Association
-- School sports associations, local newspapers, verified media outlets
-- Official team announcements, tournament records, press releases
+## Factual Research Rule
+Verify all information from: FIBA, Jamaica Basketball Association, ISSA, Caribbean sports federations, local newspapers, verified media, official team pages, tournament records.
 
-## Research Requirement
-Before writing any article, **verify all facts**:
-- Team names, player names, scores, statistics, dates
-- Tournament names, venues, league structures, standings
-
-If information cannot be verified, **omit it**. Do not guess.
-
-## No Fabrication Policy
-Strictly prohibited:
-- Fictional players, games, tournaments, quotes, teams, statistics, historical events
+**Verify:** team names, player names, scores, statistics, competition names, venues, dates, standings.  
+**If unverifiable → omit it. Never invent.**
 
 ## Image Policy
-- Only use real, publicly available images (press photos, league media, team social media)
-- **Never** generate AI images of players, games, or events
-- If no legitimate image is available, use the site placeholder or publish without an image
+- Only real, publicly obtainable images (league media, press photos, team social, sports photography)
+- **Never generate AI images** — use site placeholder or publish without image
+- Never fabricate event photography or player images
 
-## Content Types
-- News, Game Recaps, Tournament Coverage
-- Player/Coach Profiles, Feature Stories
-- Opinion (grounded in real events), Historical retrospectives
+## SEO Keyword Strategy (Ahrefs-style)
+For every article determine: **Primary Keyword, Secondary Keywords, Related Keywords, Long-tail Keywords**
+
+**Primary keyword must appear in:** title, SEO title, meta description, URL slug, H1, first 100 words
+
+**Secondary keywords in:** H2/H3 headings, body paragraphs, image alt text, internal links
+
+**Target topics:** jamaica basketball, jamaica basketball news, jamaica national basketball team, jamaica high school basketball, basketball in jamaica, jamaica basketball league, jamaica 3x3 basketball, schoolboy basketball jamaica, jamaican basketball players
 
 ## Article Structure
-1. Headline
-2. Subheadline / dek
-3. Lead paragraph summarizing the story
-4. Key facts and context
-5. Game or event details
-6. Quotes or reporting if available
-7. Broader context for Jamaican basketball
-8. Closing summary
+1. SEO-optimized title
+2. Meta description (150-160 chars)
+3. Short keyword-focused slug
+4. H1 headline → subheadline/dek
+5. Lead paragraph with primary keyword
+6. H2 sections (game summary, context, performance, implications)
+7. H3 subsections where appropriate
+8. Internal links with keyword-rich anchor text
 
-## SEO Keywords (natural use only)
-Jamaica basketball, Jamaican basketball, Jamaica national basketball team, Jamaica high school basketball, Jamaican basketball league, basketball in Jamaica
+## Internal Linking
+Link to: national team coverage, high school basketball, tournaments, player profiles, past game coverage. Use keyword-rich anchor text.
 
-## Editorial Tone
-Journalistic, clear, factual, informative, confident, locally informed. Avoid clickbait or speculation presented as fact.
+## Technical SEO Output (per article)
+- SEO Title, Meta Description, URL Slug
+- Primary Keyword, Secondary Keywords
+- Suggested Internal Links, Tags, Category
 
 ## Final Verification Checklist
-- [ ] Every player mentioned exists
-- [ ] Every team mentioned exists
+- [ ] Every player exists
+- [ ] Every team exists
 - [ ] Every competition exists
-- [ ] Every score is real
+- [ ] Every statistic is real
 - [ ] Every date is correct
-- [ ] No information was invented
+- [ ] No fact was invented
+- [ ] Primary keyword in title, slug, first 100 words
 
-> **Principle**: Accuracy is more important than volume. Fewer accurate articles > many speculative ones.
+> **Principle**: Accuracy overrides SEO. Publishing fewer accurate articles > many speculative ones.
