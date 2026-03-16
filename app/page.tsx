@@ -5,6 +5,7 @@ import PostCard from "@/components/ui/PostCard";
 import SocialCta from "@/components/ui/SocialCta";
 import SponsorPlaceholder from "@/components/ui/SponsorPlaceholder";
 import { getPublishedPosts, getFeaturedPosts, getPostsByCategory, getTrendingPosts, CATEGORIES } from "@/lib/content";
+import { LEAGUE_HUBS, getPostsForLeagueHub } from "@/lib/leagues";
 import { SITE } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -24,6 +25,7 @@ export default function HomePage() {
   const coverageHubs = CATEGORIES.filter((category) =>
     ["news", "national-team", "high-school", "club-basketball", "3x3", "player-spotlight"].includes(category.slug)
   );
+  const leagueHubs = LEAGUE_HUBS.slice(0, 6);
 
   // Opinion + Features combined module
   const opinionPosts = getPostsByCategory("opinion").slice(0, 3);
@@ -100,6 +102,50 @@ export default function HomePage() {
                 </h3>
                 <p className="mt-2 text-sm leading-relaxed text-text-muted">
                   {category.description}
+                </p>
+              </Link>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className="mb-14 rounded-2xl border border-border bg-surface/60 p-6 md:p-8">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h2 className="font-display text-xl font-bold text-text">
+              Leagues & Programs
+            </h2>
+            <p className="mt-2 max-w-3xl text-sm text-text-muted">
+              These hubs are built from the Jamaica Basketball datasheets so the site can track active leagues, school competitions, JABA programs, and academy pathways in one place.
+            </p>
+          </div>
+          <Link
+            href="/leagues"
+            className="text-sm font-medium text-accent transition-colors hover:text-accent-hover"
+          >
+            View All Leagues →
+          </Link>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {leagueHubs.map((hub) => {
+            const relatedPosts = getPostsForLeagueHub(hub);
+            return (
+              <Link
+                key={hub.slug}
+                href={`/leagues/${hub.slug}`}
+                className="rounded-xl border border-border bg-bg/40 p-5 transition-colors hover:border-accent/40 hover:bg-surface"
+              >
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">
+                  {hub.teamCount} tracked teams
+                </p>
+                <h3 className="mt-2 font-display text-lg font-bold text-text">
+                  {hub.shortLabel}
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed text-text-muted">
+                  {hub.status}
+                </p>
+                <p className="mt-4 text-sm text-text-dim">
+                  {relatedPosts.length} related article{relatedPosts.length === 1 ? "" : "s"}
                 </p>
               </Link>
             );

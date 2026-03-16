@@ -33,10 +33,18 @@ export default function Footer() {
                             Coverage
                         </h4>
                         <ul className="space-y-2">
+                            <li>
+                                <Link
+                                    href="/leagues"
+                                    className="text-sm text-text-muted transition-colors hover:text-text"
+                                >
+                                    Leagues & Programs
+                                </Link>
+                            </li>
                             {CATEGORIES.slice(0, 6).map((c) => (
                                 <li key={c.slug}>
                                     <Link
-                                        href={`/category/${c.slug}`}
+                                        href={c.slug === "news" ? "/news" : `/category/${c.slug}`}
                                         className="text-sm text-text-muted transition-colors hover:text-text"
                                     >
                                         {c.label}

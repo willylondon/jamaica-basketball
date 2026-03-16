@@ -7,6 +7,7 @@ import { CATEGORIES } from "@/lib/content";
 
 const NAV_LINKS = [
     { href: "/news", label: "News" },
+    { href: "/leagues", label: "Leagues & Programs" },
     { href: "/opinion", label: "Opinion" },
     { href: "/features", label: "Features" },
     { href: "/category/national-team", label: "National Team" },

@@ -34,6 +34,15 @@ export function capitalize(str: string): string {
     return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
+/** Convert text into a route-safe slug */
+export function slugify(value: string): string {
+    return value
+        .toLowerCase()
+        .replace(/&/g, "and")
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+}
+
 /** Site metadata constants */
 export const SITE = {
     name: "Jamaica Basketball",

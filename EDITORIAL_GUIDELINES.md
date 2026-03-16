@@ -36,6 +36,22 @@ For every article determine: **Primary Keyword, Secondary Keywords, Related Keyw
 ## Internal Linking
 Link to: national team coverage, high school basketball, tournaments, player profiles, past game coverage. Use keyword-rich anchor text.
 
+## League Filing Rule
+Every timely report should be assigned to:
+- one primary category (`news` for breaking/reporting, `features` for longer reads, `opinion` for commentary)
+- one competition or program tag where relevant
+
+Recommended league/program tags:
+- `JABA`
+- `NBL`
+- `Howard McCatty`
+- `P.H.A.S.E. 1 Academy`
+- `Under-19`
+- `Under-16`
+- `Under-14`
+- `Women's Basketball`
+- `3x3`
+
 ## Technical SEO Output (per article)
 - SEO Title, Meta Description, URL Slug
 - Primary Keyword, Secondary Keywords
