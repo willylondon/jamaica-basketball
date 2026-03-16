@@ -18,9 +18,10 @@ export function OrganizationJsonLd() {
         <JsonLd
             data={{
                 "@context": "https://schema.org",
-                "@type": "Organization",
+                "@type": "NewsMediaOrganization",
                 name: SITE.name,
                 url: SITE.url,
+                description: SITE.description,
                 logo: `${SITE.url}/logo.jpg`,
                 sameAs: [SITE.socials.instagram, SITE.socials.tiktok],
             }}

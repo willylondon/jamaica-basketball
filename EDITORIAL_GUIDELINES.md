@@ -50,4 +50,9 @@ Link to: national team coverage, high school basketball, tournaments, player pro
 - [ ] No fact was invented
 - [ ] Primary keyword in title, slug, first 100 words
 
+## Workflow Notes
+- Use [`docs/POST_TEMPLATE.mdx`](/Users/willardwells/Documents/SEO%20Master/jamaica-basketball-repo/docs/POST_TEMPLATE.mdx) as the starting point for every new story.
+- Publish to `content/posts/`.
+- The site now exposes an RSS feed at `/feed.xml` for subscribers and syndication.
+
 > **Principle**: Accuracy overrides SEO. Publishing fewer accurate articles > many speculative ones.
