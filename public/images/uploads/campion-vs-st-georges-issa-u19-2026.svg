@@ -18,16 +18,16 @@
 
   <g transform="translate(180 290)">
     <circle cx="220" cy="170" r="128" fill="#0b2e69" stroke="#ffffff" stroke-opacity="0.45" stroke-width="10"/>
-    <text x="220" y="160" text-anchor="middle" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="78" font-weight="800">CC</text>
-    <text x="220" y="214" text-anchor="middle" fill="#d8e6ff" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="700" letter-spacing="2">CAMPION</text>
+    <image href="/images/uploads/campion-college-logo.png" x="102" y="52" width="236" height="236" preserveAspectRatio="xMidYMid meet"/>
+    <text x="220" y="322" text-anchor="middle" fill="#d8e6ff" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="700" letter-spacing="2">CAMPION</text>
     <text x="0" y="410" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="54" font-weight="800">70</text>
     <text x="92" y="410" fill="#d9e2f1" font-family="Arial, Helvetica, sans-serif" font-size="42" font-weight="700">CHAMPIONS</text>
   </g>
 
   <g transform="translate(980 290)">
     <circle cx="220" cy="170" r="128" fill="#5a0f28" stroke="#ffffff" stroke-opacity="0.45" stroke-width="10"/>
-    <text x="220" y="160" text-anchor="middle" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="66" font-weight="800">SGC</text>
-    <text x="220" y="214" text-anchor="middle" fill="#ffd9e0" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" letter-spacing="2">ST GEORGE'S</text>
+    <image href="/images/uploads/st-georges-college-logo.png" x="144" y="92" width="152" height="152" preserveAspectRatio="xMidYMid meet"/>
+    <text x="220" y="322" text-anchor="middle" fill="#ffd9e0" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" letter-spacing="2">ST GEORGE'S</text>
     <text x="0" y="410" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="54" font-weight="800">64</text>
     <text x="92" y="410" fill="#f1d5dc" font-family="Arial, Helvetica, sans-serif" font-size="42" font-weight="700">FINAL SCORE</text>
   </g>

@@ -20,17 +20,20 @@
   <text x="120" y="248" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="76" font-weight="800">NORMAN POWELL</text>
   <text x="120" y="316" fill="#f2cc67" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700" letter-spacing="3">34 POINTS ON JAMAICA DEBUT</text>
 
-  <g transform="translate(120 420)">
+  <g transform="translate(120 388)">
+    <rect x="0" y="0" width="360" height="320" rx="28" fill="#121820" stroke="#2f3b46" stroke-width="3"/>
+    <image href="/images/uploads/norman-powell-nba.png" x="18" y="18" width="324" height="236" preserveAspectRatio="xMidYMid meet"/>
+    <text x="180" y="284" text-anchor="middle" fill="#f2cc67" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="700" letter-spacing="2">NORMAN POWELL</text>
+  </g>
+
+  <g transform="translate(520 420)">
     <rect width="490" height="230" rx="28" fill="#11171d" stroke="#2f3b46" stroke-width="3"/>
     <text x="40" y="66" fill="#8abf57" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" letter-spacing="3">JAMAICA</text>
-    <rect x="40" y="100" width="150" height="92" rx="12" fill="#009b3a"/>
-    <polygon points="40,146 115,100 190,146 115,192" fill="#fcd116"/>
-    <polygon points="40,100 94,132 94,160 40,192" fill="#000000"/>
-    <polygon points="190,100 136,132 136,160 190,192" fill="#000000"/>
+    <image href="/images/uploads/jaba-logo.png" x="36" y="86" width="136" height="136" preserveAspectRatio="xMidYMid meet"/>
     <text x="240" y="168" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="92" font-weight="800">80</text>
   </g>
 
-  <g transform="translate(680 420)">
+  <g transform="translate(1060 420)">
     <rect width="490" height="230" rx="28" fill="#11171d" stroke="#2f3b46" stroke-width="3"/>
     <text x="40" y="66" fill="#f47076" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" letter-spacing="3">COSTA RICA</text>
     <rect x="40" y="100" width="150" height="92" rx="12" fill="#002b7f"/>
@@ -39,7 +42,7 @@
     <text x="240" y="168" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="92" font-weight="800">76</text>
   </g>
 
-  <g transform="translate(1240 436)">
+  <g transform="translate(1280 120)">
     <circle cx="120" cy="120" r="112" fill="#13191f" stroke="url(#gold)" stroke-width="10"/>
     <text x="120" y="104" text-anchor="middle" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="700">OT</text>
     <text x="120" y="148" text-anchor="middle" fill="#f2cc67" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700">AUG 2025</text>

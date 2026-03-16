@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">Canada versus Jamaica FIBA qualifier</title>
+  <desc id="desc">Matchup graphic for Canada versus Jamaica using Jamaica Basketball Association branding and a Canada badge.</desc>
+  <rect width="1600" height="900" fill="#0c0f15"/>
+  <circle cx="280" cy="180" r="180" fill="#0b8b3d" opacity="0.12"/>
+  <circle cx="1320" cy="180" r="210" fill="#cf1f2e" opacity="0.14"/>
+  <rect x="80" y="84" width="1440" height="732" rx="36" fill="#10151d" stroke="#2c3442" stroke-width="4"/>
+
+  <text x="120" y="166" fill="#f2f4f8" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700" letter-spacing="5">WORLD CUP QUALIFIER</text>
+  <text x="120" y="248" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="76" font-weight="800">CANADA VS JAMAICA</text>
+  <text x="120" y="314" fill="#f2c14a" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700" letter-spacing="3">NATIONAL INDOOR SPORTS CENTRE, KINGSTON</text>
+
+  <g transform="translate(120 390)">
+    <rect width="500" height="236" rx="28" fill="#141c26" stroke="#324153" stroke-width="3"/>
+    <text x="40" y="68" fill="#7ccf6d" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="700" letter-spacing="3">JAMAICA</text>
+    <image href="/images/uploads/jaba-logo.png" x="36" y="86" width="150" height="126" preserveAspectRatio="xMidYMid meet"/>
+    <text x="254" y="172" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="96" font-weight="800">81</text>
+  </g>
+
+  <g transform="translate(700 390)">
+    <rect width="500" height="236" rx="28" fill="#141c26" stroke="#324153" stroke-width="3"/>
+    <text x="40" y="68" fill="#ff7c88" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="700" letter-spacing="3">CANADA</text>
+    <rect x="38" y="92" width="150" height="120" rx="14" fill="#ffffff"/>
+    <rect x="38" y="92" width="32" height="120" fill="#d71920"/>
+    <rect x="156" y="92" width="32" height="120" fill="#d71920"/>
+    <polygon points="113,108 124,132 149,126 132,147 150,167 126,165 123,190 113,172 102,190 99,165 75,167 93,147 76,126 101,132" fill="#d71920"/>
+    <text x="254" y="172" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="96" font-weight="800">97</text>
+  </g>
+
+  <g transform="translate(1260 414)">
+    <circle cx="110" cy="110" r="104" fill="#141c26" stroke="#f2c14a" stroke-width="10"/>
+    <text x="110" y="102" text-anchor="middle" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="700">MAR</text>
+    <text x="110" y="144" text-anchor="middle" fill="#f2c14a" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700">2026</text>
+  </g>
+
+  <text x="120" y="742" fill="#dbe0e8" font-family="Arial, Helvetica, sans-serif" font-size="30">Canada takes the road win as Jamaica battles in Kingston</text>
+</svg>
