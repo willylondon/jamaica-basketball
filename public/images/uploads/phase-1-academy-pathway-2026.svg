@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">P.H.A.S.E. 1 Academy pathway graphic</title>
+  <desc id="desc">A clean Jamaica Basketball feature graphic highlighting the P.H.A.S.E. 1 Academy player pathway.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0d1b2a" />
+      <stop offset="100%" stop-color="#1b263b" />
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#bg)" />
+  <rect x="96" y="96" width="1408" height="708" rx="40" fill="#14213d" stroke="#fca311" stroke-width="4" />
+  <text x="140" y="180" fill="#fca311" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700" letter-spacing="6">JAMAICA BASKETBALL FEATURE</text>
+  <text x="140" y="320" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="88" font-weight="700">P.H.A.S.E. 1 Academy</text>
+  <text x="140" y="405" fill="#e5e7eb" font-family="Arial, Helvetica, sans-serif" font-size="44">Why an active academy pathway matters for youth development</text>
+  <text x="140" y="560" fill="#fca311" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700">U15  •  U16  •  U17  •  U18  •  U19  •  U21  •  Girls Travel Team</text>
+  <text x="140" y="660" fill="#dbe4ee" font-family="Arial, Helvetica, sans-serif" font-size="30">Tracking the programs and development routes that keep Jamaican basketball moving.</text>
+  <circle cx="1310" cy="260" r="120" fill="#fca311" opacity="0.16" />
+  <circle cx="1390" cy="340" r="72" fill="#ffffff" opacity="0.14" />
+  <circle cx="1270" cy="420" r="54" fill="#fca311" opacity="0.22" />
+</svg>
