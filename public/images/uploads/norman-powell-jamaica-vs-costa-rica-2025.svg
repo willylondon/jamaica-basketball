@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">Norman Powell Jamaica debut vs Costa Rica</title>
+  <desc id="desc">Matchup graphic for Jamaica versus Costa Rica featuring Norman Powell's Jamaica debut.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#05151d"/>
+      <stop offset="100%" stop-color="#121212"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#c79c28"/>
+      <stop offset="100%" stop-color="#f2cc67"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <circle cx="1280" cy="180" r="220" fill="#0f5e2d" opacity="0.18"/>
+  <circle cx="260" cy="760" r="260" fill="#cf2027" opacity="0.12"/>
+  <rect x="80" y="96" width="1440" height="708" rx="34" fill="#0d1014" stroke="#2d323a" stroke-width="4"/>
+
+  <text x="120" y="170" fill="#f4f1e8" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700" letter-spacing="5">PLAYER SPOTLIGHT</text>
+  <text x="120" y="248" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="76" font-weight="800">NORMAN POWELL</text>
+  <text x="120" y="316" fill="#f2cc67" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700" letter-spacing="3">34 POINTS ON JAMAICA DEBUT</text>
+
+  <g transform="translate(120 420)">
+    <rect width="490" height="230" rx="28" fill="#11171d" stroke="#2f3b46" stroke-width="3"/>
+    <text x="40" y="66" fill="#8abf57" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" letter-spacing="3">JAMAICA</text>
+    <rect x="40" y="100" width="150" height="92" rx="12" fill="#009b3a"/>
+    <polygon points="40,146 115,100 190,146 115,192" fill="#fcd116"/>
+    <polygon points="40,100 94,132 94,160 40,192" fill="#000000"/>
+    <polygon points="190,100 136,132 136,160 190,192" fill="#000000"/>
+    <text x="240" y="168" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="92" font-weight="800">80</text>
+  </g>
+
+  <g transform="translate(680 420)">
+    <rect width="490" height="230" rx="28" fill="#11171d" stroke="#2f3b46" stroke-width="3"/>
+    <text x="40" y="66" fill="#f47076" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" letter-spacing="3">COSTA RICA</text>
+    <rect x="40" y="100" width="150" height="92" rx="12" fill="#002b7f"/>
+    <rect x="40" y="123" width="150" height="46" fill="#ffffff"/>
+    <rect x="40" y="138" width="150" height="16" fill="#ce1126"/>
+    <text x="240" y="168" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="92" font-weight="800">76</text>
+  </g>
+
+  <g transform="translate(1240 436)">
+    <circle cx="120" cy="120" r="112" fill="#13191f" stroke="url(#gold)" stroke-width="10"/>
+    <text x="120" y="104" text-anchor="middle" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="700">OT</text>
+    <text x="120" y="148" text-anchor="middle" fill="#f2cc67" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700">AUG 2025</text>
+  </g>
+
+  <rect x="120" y="710" width="900" height="10" rx="5" fill="url(#gold)"/>
+  <text x="120" y="770" fill="#d6d9df" font-family="Arial, Helvetica, sans-serif" font-size="30">Historic FIBA World Cup Pre-Qualifier win in Mexico</text>
+</svg>

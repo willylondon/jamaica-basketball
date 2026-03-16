@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">Jamaica versus Bahamas FIBA qualifier</title>
+  <desc id="desc">Caribbean rivalry matchup graphic for Jamaica and Bahamas in a FIBA World Cup qualifier.</desc>
+  <rect width="1600" height="900" fill="#0b1020"/>
+  <circle cx="280" cy="170" r="180" fill="#1a8b43" opacity="0.16"/>
+  <circle cx="1290" cy="220" r="220" fill="#00abc8" opacity="0.18"/>
+  <rect x="84" y="84" width="1432" height="732" rx="34" fill="#0f1527" stroke="#293145" stroke-width="4"/>
+
+  <text x="120" y="170" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700" letter-spacing="5">FIBA WORLD CUP QUALIFIER</text>
+  <text x="120" y="250" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="72" font-weight="800">CARIBBEAN RIVALRY</text>
+  <text x="120" y="318" fill="#f2c14a" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700" letter-spacing="3">JAMAICA VS BAHAMAS</text>
+
+  <g transform="translate(120 420)">
+    <rect width="500" height="220" rx="28" fill="#121925" stroke="#2f3a4c" stroke-width="3"/>
+    <text x="40" y="66" fill="#7fd36a" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" letter-spacing="3">JAMAICA</text>
+    <rect x="40" y="96" width="150" height="92" rx="12" fill="#009b3a"/>
+    <polygon points="40,142 115,96 190,142 115,188" fill="#fcd116"/>
+    <polygon points="40,96 94,128 94,156 40,188" fill="#000000"/>
+    <polygon points="190,96 136,128 136,156 190,188" fill="#000000"/>
+    <text x="250" y="160" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="92" font-weight="800">96</text>
+  </g>
+
+  <g transform="translate(690 420)">
+    <rect width="500" height="220" rx="28" fill="#121925" stroke="#2f3a4c" stroke-width="3"/>
+    <text x="40" y="66" fill="#6ce8ff" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" letter-spacing="3">BAHAMAS</text>
+    <rect x="40" y="96" width="150" height="92" rx="12" fill="#00abc8"/>
+    <rect x="40" y="96" width="150" height="30" fill="#fcd116"/>
+    <rect x="40" y="158" width="150" height="30" fill="#fcd116"/>
+    <polygon points="40,96 40,188 98,142" fill="#000000"/>
+    <text x="250" y="160" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="92" font-weight="800">99</text>
+  </g>
+
+  <g transform="translate(1270 438)">
+    <circle cx="100" cy="100" r="96" fill="#121925" stroke="#f2c14a" stroke-width="10"/>
+    <text x="100" y="92" text-anchor="middle" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="700">FEB</text>
+    <text x="100" y="132" text-anchor="middle" fill="#f2c14a" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700">2026</text>
+  </g>
+
+  <text x="120" y="760" fill="#d8dde6" font-family="Arial, Helvetica, sans-serif" font-size="30">A three-point margin in a key Group B qualifier</text>
+</svg>

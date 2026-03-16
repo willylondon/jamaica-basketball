@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">Campion College versus St George's College ISSA Urban Under-19 final</title>
+  <desc id="desc">Championship graphic for Campion College and St George's College in the ISSA Urban Under-19 final.</desc>
+  <rect width="1600" height="900" fill="#0e1016"/>
+  <rect x="0" y="0" width="800" height="900" fill="#123f8c"/>
+  <rect x="800" y="0" width="800" height="900" fill="#6a1430"/>
+  <rect x="0" y="0" width="1600" height="900" fill="url(#overlay)"/>
+  <defs>
+    <linearGradient id="overlay" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.06"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.24"/>
+    </linearGradient>
+  </defs>
+  <rect x="90" y="90" width="1420" height="720" rx="36" fill="none" stroke="#d8dbe2" stroke-opacity="0.2" stroke-width="4"/>
+
+  <text x="800" y="150" text-anchor="middle" fill="#f1f3f8" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700" letter-spacing="5">ISSA URBAN UNDER-19 FINAL</text>
+  <text x="800" y="224" text-anchor="middle" fill="#f6d06a" font-family="Arial, Helvetica, sans-serif" font-size="48" font-weight="800">GAME 3 CHAMPIONSHIP DECIDER</text>
+
+  <g transform="translate(180 290)">
+    <circle cx="220" cy="170" r="128" fill="#0b2e69" stroke="#ffffff" stroke-opacity="0.45" stroke-width="10"/>
+    <text x="220" y="160" text-anchor="middle" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="78" font-weight="800">CC</text>
+    <text x="220" y="214" text-anchor="middle" fill="#d8e6ff" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="700" letter-spacing="2">CAMPION</text>
+    <text x="0" y="410" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="54" font-weight="800">70</text>
+    <text x="92" y="410" fill="#d9e2f1" font-family="Arial, Helvetica, sans-serif" font-size="42" font-weight="700">CHAMPIONS</text>
+  </g>
+
+  <g transform="translate(980 290)">
+    <circle cx="220" cy="170" r="128" fill="#5a0f28" stroke="#ffffff" stroke-opacity="0.45" stroke-width="10"/>
+    <text x="220" y="160" text-anchor="middle" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="66" font-weight="800">SGC</text>
+    <text x="220" y="214" text-anchor="middle" fill="#ffd9e0" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" letter-spacing="2">ST GEORGE'S</text>
+    <text x="0" y="410" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="54" font-weight="800">64</text>
+    <text x="92" y="410" fill="#f1d5dc" font-family="Arial, Helvetica, sans-serif" font-size="42" font-weight="700">FINAL SCORE</text>
+  </g>
+
+  <text x="800" y="770" text-anchor="middle" fill="#f4f5f8" font-family="Arial, Helvetica, sans-serif" font-size="32">Campion College clinches back-to-back schoolboy basketball titles</text>
+</svg>
