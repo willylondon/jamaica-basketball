@@ -12,7 +12,7 @@ export default function SocialCta() {
             </p>
             <div className="flex flex-wrap items-center justify-center gap-3">
                 <a
-                    href={SITE.socials.instagram}
+                    href={"https://www.instagram.com/jamaicabasketball"}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 rounded-lg bg-accent px-5 py-3 text-sm font-bold text-black transition-all hover:bg-accent-hover hover:scale-105"
@@ -23,7 +23,7 @@ export default function SocialCta() {
                     Instagram
                 </a>
                 <a
-                    href={SITE.socials.tiktok}
+                    href={"https://www.tiktok.com/@jamaicabasketball"}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface px-5 py-3 text-sm font-bold text-text transition-all hover:border-accent/30 hover:text-accent hover:scale-105"

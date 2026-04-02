@@ -103,7 +103,7 @@ export default function Footer() {
                         {/* Socials */}
                         <div className="mt-6 flex items-center gap-4">
                             <a
-                                href={SITE.socials.instagram}
+                                href={"https://www.instagram.com/jamaicabasketball"}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-text-muted transition-colors hover:text-accent"
@@ -114,7 +114,7 @@ export default function Footer() {
                                 </svg>
                             </a>
                             <a
-                                href={SITE.socials.tiktok}
+                                href={"https://www.tiktok.com/@jamaicabasketball"}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-text-muted transition-colors hover:text-accent"
