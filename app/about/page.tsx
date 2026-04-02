@@ -71,7 +71,7 @@ export default function AboutPage() {
                 <ul>
                     <li>
                         <a
-                            href="https://instagram.com/jamaicabasketall"
+                            href="https://instagram.com/jamaicabasketball"
                             target="_blank"
                             rel="noopener noreferrer"
                         >
@@ -80,7 +80,7 @@ export default function AboutPage() {
                     </li>
                     <li>
                         <a
-                            href="https://tiktok.com/@jamaicabasketall"
+                            href="https://tiktok.com/@jamaicabasketball"
                             target="_blank"
                             rel="noopener noreferrer"
                         >

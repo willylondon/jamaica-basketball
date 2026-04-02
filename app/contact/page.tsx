@@ -35,7 +35,7 @@ export default function ContactPage() {
                 <h2>Follow Us</h2>
                 <div className="flex gap-4 my-4">
                     <a
-                        href="https://instagram.com/jamaicabasketall"
+                        href="https://instagram.com/jamaicabasketball"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface px-4 py-3 text-sm font-medium text-text transition-all hover:border-accent/30 hover:text-accent"
@@ -46,7 +46,7 @@ export default function ContactPage() {
                         Instagram
                     </a>
                     <a
-                        href="https://tiktok.com/@jamaicabasketall"
+                        href="https://tiktok.com/@jamaicabasketball"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface px-4 py-3 text-sm font-medium text-text transition-all hover:border-accent/30 hover:text-accent"
