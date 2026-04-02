@@ -52,7 +52,7 @@ export const SITE = {
     ogImage: "/og-default.jpg",
     contactEmail: "hello@jamaicabasketball.online",
     socials: {
-        instagram: "https://instagram.com/jamaicabasketall",
+        instagram: "https://www.instagram.com/jamaicabasketball?igsh=c2x5MGdmbXYxNjFk",
         tiktok: "https://tiktok.com/@jamaicabasketall",
         youtube: "",
         x: "",
