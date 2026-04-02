@@ -1,5 +1,23 @@
 import { defineConfig, defineCollection, s } from "velite";
 
+const authors = defineCollection({
+  name: "Author",
+  pattern: "authors/**/*.json",
+  schema: s.object({
+    name: s.string(),
+    slug: s.slug("authors"),
+    role: s.string(),
+    bio: s.string(),
+    image: s.string(),
+    website: s.string().url().optional(),
+    socials: s.object({
+      instagram: s.string().optional(),
+      tiktok: s.string().optional(),
+      twitter: s.string().optional(),
+    }).optional(),
+  }),
+});
+
 const posts = defineCollection({
   name: "Post",
   pattern: "posts/**/*.mdx",
@@ -11,7 +29,7 @@ const posts = defineCollection({
     description: s.string().optional().default(""),
     date: s.isodate(),
     updated: s.isodate().optional(),
-    author: s.string().default("Jamaica Basketball"),
+    author: s.string().default("jamaica-basketball"),
     category: s.enum([
       "news",
       "opinion",
@@ -64,5 +82,5 @@ export default defineConfig({
     name: "[name]-[hash:6].[ext]",
     clean: true,
   },
-  collections: { posts, pages },
+  collections: { posts, pages, authors },
 });

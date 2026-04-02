@@ -1,10 +1,11 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { getPostBySlug, getPublishedPosts, getRelatedPosts, getCategoryLabel } from "@/lib/content";
+import { getPostBySlug, getPublishedPosts, getRelatedPosts, getCategoryLabel, getAuthorBySlug } from "@/lib/content";
 import { formatDate, SITE } from "@/lib/utils";
 import Breadcrumbs from "@/components/ui/Breadcrumbs";
 import CategoryBadge from "@/components/ui/CategoryBadge";
 import PostCard from "@/components/ui/PostCard";
+import AuthorCard from "@/components/ui/AuthorCard";
 import { ArticleJsonLd, BreadcrumbJsonLd } from "@/components/seo/JsonLd";
 import Image from "next/image";
 import { MDXContent } from "@/components/mdx-content";
@@ -60,6 +61,7 @@ export default async function PostPage({ params }: PageProps) {
     const post = getPostBySlug(slug);
     if (!post) notFound();
 
+    const author = getAuthorBySlug(post.author);
     const relatedPosts = getRelatedPosts(post, 3);
     const categoryLabel = getCategoryLabel(post.category);
     // Cast toc as any since Typescript type might not be updated until build
@@ -154,17 +156,13 @@ export default async function PostPage({ params }: PageProps) {
                                     </a>
                                 </li>
                             ))}
-                        </ul>
-                    </nav>
-                )}
-
-                {/* Article body */}
-                <div className="article-body prose prose-invert max-w-none">
                     <MDXContent code={post.body} />
                 </div>
 
+                {/* Author Card */}
+                {author && <AuthorCard author={author} />}
+
                 {/* Tags */}
-                {post.tags.length > 0 && (
                     <div className="mt-10 flex flex-wrap gap-2">
                         {post.tags.map((tag) => (
                             <span

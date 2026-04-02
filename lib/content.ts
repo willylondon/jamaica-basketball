@@ -1,7 +1,17 @@
-import { posts } from "@/.velite";
-import type { Post } from "@/.velite";
+import { posts, authors } from "@/.velite";
+import type { Post, Author } from "@/.velite";
 
-export type { Post };
+export type { Post, Author };
+
+/** Return all authors */
+export function getAllAuthors(): Author[] {
+  return authors;
+}
+
+/** Return author by slug */
+export function getAuthorBySlug(slug: string): Author | undefined {
+  return authors.find((a) => a.slug === slug);
+}
 
 export const CATEGORIES = [
     { slug: "news", label: "News", description: "Latest basketball news from across Jamaica" },
