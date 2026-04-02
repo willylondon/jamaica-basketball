@@ -32,7 +32,11 @@ export default function HomePage() {
   const featurePosts = getPostsByCategory("features").slice(0, 3);
 
   // Trending / recommended
-  const trendingPosts = getTrendingPosts(4).filter((p) => p.slug !== heroPost?.slug);
+  // Filter out latest posts to reduce duplication on homepage
+  const latestSlugSet = new Set(latestPosts.map(p => p.slug));
+  const trendingPosts = getTrendingPosts(8)
+    .filter((p) => p.slug !== heroPost?.slug && !latestSlugSet.has(p.slug))
+    .slice(0, 4);
 
   // Category spotlights (exclude opinion/features since they have dedicated modules)
   const spotlightCategories = CATEGORIES.filter(
@@ -272,6 +276,27 @@ export default function HomePage() {
           </section>
         );
       })}
+
+      {/* Partnership CTA */}
+      <section className="mb-14 rounded-3xl overflow-hidden relative">
+        <div className="absolute inset-0 bg-gradient-to-br from-accent/20 via-surface to-bg z-0" />
+        <div className="relative z-10 px-8 py-12 md:px-12 md:py-16 text-center md:text-left flex flex-col md:flex-row items-center justify-between gap-8">
+          <div className="max-w-2xl">
+            <h2 className="font-display text-3xl md:text-4xl font-black text-text leading-tight mb-4">
+              Partner with the Source of <span className="text-accent">Jamaica Basketball</span>
+            </h2>
+            <p className="text-lg text-text-muted leading-relaxed">
+              Reach the most engaged basketball audience in Jamaica. We offer premium sponsorship spots, event coverage, and brand integration across our platforms.
+            </p>
+          </div>
+          <Link
+            href="mailto:partner@jamaicabasketball.online"
+            className="inline-flex h-14 items-center justify-center rounded-full bg-accent px-10 text-base font-bold uppercase tracking-wider text-black transition-all hover:bg-accent-hover hover:scale-105 active:scale-95 shadow-xl shadow-accent/20"
+          >
+            Become a Partner
+          </Link>
+        </div>
+      </section>
 
       {/* Social Follow CTA */}
       <div className="mb-14">
