@@ -1,16 +1,37 @@
-import { posts, authors } from "@/.velite";
-import type { Post, Author } from "@/.velite";
+import { posts } from "@/.velite";
+import type { Post } from "@/.velite";
 
-export type { Post, Author };
+export type { Post };
+
+// Author type matching content/authors/*.json schema
+export type Author = {
+  name: string;
+  slug: string;
+  role: string;
+  bio: string;
+  image: string;
+  website?: string;
+  socials?: {
+    instagram?: string;
+    tiktok?: string;
+    twitter?: string;
+  };
+};
+
+// Load authors directly from JSON to avoid Velite module cache issues
+import willyLondon from "@/content/authors/willy-london.json";
+import jamaicaBasketball from "@/content/authors/jamaica-basketball.json";
+
+const allAuthors: Author[] = [willyLondon, jamaicaBasketball];
 
 /** Return all authors */
 export function getAllAuthors(): Author[] {
-  return authors;
+  return allAuthors;
 }
 
 /** Return author by slug */
 export function getAuthorBySlug(slug: string): Author | undefined {
-  return authors.find((a) => a.slug === slug);
+  return allAuthors.find((a) => a.slug === slug);
 }
 
 export const CATEGORIES = [
