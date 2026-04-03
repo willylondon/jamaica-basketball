@@ -113,8 +113,15 @@ export default async function PostPage({ params }: PageProps) {
                         </div>
                     )}
                 </header>
-                <figure className="mb-8 overflow-hidden rounded-xl relative w-full aspect-video">
-                    <CoverImage src={post.image} alt={post.imageAlt} className="object-cover" priority />
+                <figure className="mb-8">
+                    <div className="overflow-hidden rounded-xl relative w-full aspect-video">
+                        <CoverImage src={post.image} alt={post.imageAlt} className="object-cover" priority />
+                    </div>
+                    {post.imageCredit && (
+                        <figcaption className="mt-1.5 text-right text-[0.6875rem] text-text-dim">
+                            {post.imageCredit}
+                        </figcaption>
+                    )}
                 </figure>
                 {showToc && (
                     <nav className="mb-8 rounded-xl border border-border bg-surface p-5" aria-label="Table of contents">
