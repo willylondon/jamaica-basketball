@@ -53,6 +53,7 @@ export default async function PostPage({ params }: PageProps) {
     const relatedPosts = getRelatedPosts(post, 3);
     const categoryLabel = getCategoryLabel(post.category);
     const readingTime = (post.metadata as any)?.readingTime;
+    const imageCredit = (post as any).imageCredit as string | undefined;
     const toc = (post as any).toc || [];
     const headings = toc.filter((t: any) => t.depth >= 2 && t.depth <= 3).map((t: any) => ({
       id: t.url.replace("#", ""),
@@ -117,9 +118,9 @@ export default async function PostPage({ params }: PageProps) {
                     <div className="overflow-hidden rounded-xl relative w-full aspect-video">
                         <CoverImage src={post.image} alt={post.imageAlt} className="object-cover" priority />
                     </div>
-                    {post.imageCredit && (
+                    {imageCredit && (
                         <figcaption className="mt-1.5 text-right text-[0.6875rem] text-text-dim">
-                            {post.imageCredit}
+                            {imageCredit}
                         </figcaption>
                     )}
                 </figure>
