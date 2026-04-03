@@ -18,11 +18,9 @@ canonical: SITE.url,
 };
 
 export default function HomePage() {
-// Build version: 2026-04-01-V4-FINAL-FIX
-
 const allPosts = getPublishedPosts();
 const featuredPosts = getFeaturedPosts();
-allPosts[0];
+const heroPost = allPosts[0];
 const latestPosts = allPosts.filter((p) => p.slug !== heroPost?.slug).slice(0, 6);
 const coverageHubs = CATEGORIES.filter((category) =>
 ["news", "national-team", "high-school", "club-basketball", "3x3", "player-spotlight"].includes(category.slug)
@@ -160,7 +158,7 @@ className="rounded-xl border border-border bg-bg/40 p-5 transition-colors hover:
 </section>
 
 {/* Opinion & Features Module */}
-featurePosts.length > 0) && (
+{(opinionPosts.length > 0 || featurePosts.length > 0) && (
 <section className="mb-14">
 <div className="grid gap-8 lg:grid-cols-2">
 {/* Opinion column */}

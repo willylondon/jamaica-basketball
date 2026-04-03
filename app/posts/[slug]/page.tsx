@@ -104,8 +104,32 @@ export default async function PostPage({ params }: PageProps) {
                 )}
                 <div className="article-body prose prose-invert max-w-none"><MDXContent code={post.body} /></div>
                 {author && <AuthorCard author={author} />}
-                <div className="mt-8 flex items-center gap-4 border-t border-border pt-6">
+                <div className="mt-8 flex items-center gap-3 border-t border-border pt-6">
                     <span className="text-sm font-medium text-text-muted">Share:</span>
+                    <a
+                        href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(post.title)}&url=${encodeURIComponent(`${SITE.url}/posts/${post.slug}`)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-text-muted transition-colors hover:border-accent/40 hover:text-accent"
+                    >
+                        X / Twitter
+                    </a>
+                    <a
+                        href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(`${SITE.url}/posts/${post.slug}`)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-text-muted transition-colors hover:border-accent/40 hover:text-accent"
+                    >
+                        Facebook
+                    </a>
+                    <a
+                        href={`https://wa.me/?text=${encodeURIComponent(`${post.title} ${SITE.url}/posts/${post.slug}`)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-text-muted transition-colors hover:border-accent/40 hover:text-accent"
+                    >
+                        WhatsApp
+                    </a>
                 </div>
             </article>
             {relatedPosts.length > 0 && (

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import type { Metadata } from "next";
 import Fuse from "fuse.js";
 import { getPublishedPosts } from "@/lib/content";
 import PostCard from "@/components/ui/PostCard";
