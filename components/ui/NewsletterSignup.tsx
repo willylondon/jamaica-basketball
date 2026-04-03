@@ -4,15 +4,24 @@ import { useState } from "react";
 export default function NewsletterSignup() {
     const [email, setEmail] = useState("");
     const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+    const [errorMsg, setErrorMsg] = useState("");
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         if (!email) return;
         setStatus("loading");
-        // TODO: replace with your email service (Mailchimp, ConvertKit, etc.)
-        // e.g. POST to /api/subscribe with { email }
-        await new Promise((r) => setTimeout(r, 800));
-        setStatus("success");
+        try {
+            const res = await fetch("/api/subscribe", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email }),
+            });
+            if (!res.ok) throw new Error("Failed");
+            setStatus("success");
+        } catch {
+            setStatus("error");
+            setErrorMsg("Something went wrong. Please try again.");
+        }
     }
 
     return (
@@ -45,8 +54,11 @@ export default function NewsletterSignup() {
                         disabled={status === "loading"}
                         className="w-full rounded-lg bg-accent px-4 py-2.5 text-sm font-bold text-black transition-all hover:bg-accent-hover disabled:opacity-60"
                     >
-                        {status === "loading" ? "Subscribing…" : "Subscribe"}
+                        {status === "loading" ? "Subscribing…" : status === "error" ? "Retry" : "Subscribe"}
                     </button>
+                    {status === "error" && (
+                        <p className="text-xs text-red-400">{errorMsg}</p>
+                    )}
                 </form>
             )}
         </div>
