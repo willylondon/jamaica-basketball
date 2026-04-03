@@ -26,7 +26,7 @@ export default function SocialCta() {
                     href={"https://www.tiktok.com/@jamaicabasketball"}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface px-5 py-3 text-sm font-bold text-text transition-all hover:border-accent/30 hover:text-accent hover:scale-105"
+                    className="inline-flex items-center gap-2 rounded-lg bg-surface border border-border px-5 py-3 text-sm font-bold text-text transition-all hover:bg-accent hover:text-black hover:border-accent hover:scale-105"
                 >
                     <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 00-.79-.05A6.34 6.34 0 003.15 15.2a6.34 6.34 0 0010.86 4.48V13.2a8.16 8.16 0 005.58 2.19V12a4.85 4.85 0 01-3.77-1.54V6.69z" />

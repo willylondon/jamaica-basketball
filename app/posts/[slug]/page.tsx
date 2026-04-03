@@ -7,7 +7,8 @@ import CategoryBadge from "@/components/ui/CategoryBadge";
 import PostCard from "@/components/ui/PostCard";
 import AuthorCard from "@/components/ui/AuthorCard";
 import { ArticleJsonLd, BreadcrumbJsonLd } from "@/components/seo/JsonLd";
-import Image from "next/image";
+import CoverImage from "@/components/ui/CoverImage";
+import ReadingProgress from "@/components/ui/ReadingProgress";
 import { MDXContent } from "@/components/mdx-content";
 
 interface PageProps {
@@ -51,6 +52,7 @@ export default async function PostPage({ params }: PageProps) {
     const author = getAuthorBySlug(post.author);
     const relatedPosts = getRelatedPosts(post, 3);
     const categoryLabel = getCategoryLabel(post.category);
+    const readingTime = (post.metadata as any)?.readingTime;
     const toc = (post as any).toc || [];
     const headings = toc.filter((t: any) => t.depth >= 2 && t.depth <= 3).map((t: any) => ({
       id: t.url.replace("#", ""),
@@ -61,6 +63,7 @@ export default async function PostPage({ params }: PageProps) {
 
     return (
         <>
+            <ReadingProgress />
             <ArticleJsonLd
                 title={post.title}
                 description={post.excerpt || post.dek || post.title}
@@ -85,12 +88,33 @@ export default async function PostPage({ params }: PageProps) {
                     {post.dek && <p className="mt-3 text-lg text-text-muted max-w-2xl">{post.dek}</p>}
                     <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-text-muted">
                         <span className="font-medium text-text">{post.author}</span>
+                        <span className="text-text-dim">·</span>
                         <time dateTime={post.date}>{formatDate(post.date)}</time>
-                        {post.updated && <span className="text-text-dim">Updated {formatDate(post.updated)}</span>}
+                        {readingTime && (
+                            <>
+                                <span className="text-text-dim">·</span>
+                                <span>{readingTime} min read</span>
+                            </>
+                        )}
+                        {post.updated && (
+                            <>
+                                <span className="text-text-dim">·</span>
+                                <span className="text-text-dim">Updated {formatDate(post.updated)}</span>
+                            </>
+                        )}
                     </div>
+                    {post.tags && post.tags.length > 0 && (
+                        <div className="mt-4 flex flex-wrap gap-2">
+                            {post.tags.map((tag: string) => (
+                                <span key={tag} className="rounded-full border border-border bg-surface px-3 py-1 text-xs font-medium text-text-dim">
+                                    #{tag}
+                                </span>
+                            ))}
+                        </div>
+                    )}
                 </header>
                 <figure className="mb-8 overflow-hidden rounded-xl relative w-full aspect-video">
-                    <Image src={post.image} alt={post.imageAlt} fill className="object-cover" priority />
+                    <CoverImage src={post.image} alt={post.imageAlt} className="object-cover" priority />
                 </figure>
                 {showToc && (
                     <nav className="mb-8 rounded-xl border border-border bg-surface p-5" aria-label="Table of contents">
