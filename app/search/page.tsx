@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { Suspense, useState, useMemo, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import Fuse from "fuse.js";
 import { getPublishedPosts } from "@/lib/content";
@@ -22,7 +22,7 @@ const fuse = new Fuse(allPosts, {
     ignoreLocation: true,
 });
 
-export default function SearchPage() {
+function SearchContent() {
     const searchParams = useSearchParams();
     const [query, setQuery] = useState(searchParams.get("q") ?? "");
 
@@ -37,9 +37,7 @@ export default function SearchPage() {
     }, [query]);
 
     return (
-        <div className="mx-auto max-w-7xl px-4 py-8 lg:px-8">
-            <Breadcrumbs items={[{ label: "Search" }]} />
-
+        <>
             <header className="mb-8">
                 <h1 className="font-display text-3xl md:text-4xl font-extrabold text-text mb-4">
                     Search
@@ -80,17 +78,28 @@ export default function SearchPage() {
                 </div>
             ) : query.trim() ? (
                 <div className="rounded-xl border border-border bg-surface p-10 text-center">
-                    <p className="text-text-muted">
-                        No results found. Try a different search term.
-                    </p>
+                    <p className="text-text-muted">No results found. Try a different search term.</p>
                 </div>
             ) : (
                 <div className="rounded-xl border border-border bg-surface p-10 text-center">
-                    <p className="text-text-muted">
-                        Start typing to search across all articles.
-                    </p>
+                    <p className="text-text-muted">Start typing to search across all articles.</p>
                 </div>
             )}
+        </>
+    );
+}
+
+export default function SearchPage() {
+    return (
+        <div className="mx-auto max-w-7xl px-4 py-8 lg:px-8">
+            <Breadcrumbs items={[{ label: "Search" }]} />
+            <Suspense fallback={
+                <div className="rounded-xl border border-border bg-surface p-10 text-center">
+                    <p className="text-text-muted">Loading search…</p>
+                </div>
+            }>
+                <SearchContent />
+            </Suspense>
         </div>
     );
 }
