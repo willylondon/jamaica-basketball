@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import NewsTicker from "@/components/ui/NewsTicker";
 import { OrganizationJsonLd, WebSiteJsonLd } from "@/components/seo/JsonLd";
 import { SITE } from "@/lib/utils";
 
@@ -85,6 +86,7 @@ export default function RootLayout({
           `}
         </Script>
         <Header />
+        <NewsTicker />
         <main className="flex-1">{children}</main>
         <Footer />
       </body>

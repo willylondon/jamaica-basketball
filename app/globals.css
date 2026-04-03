@@ -153,6 +153,22 @@ a {
   margin: 2rem 0;
 }
 
+/* ── News Ticker ─────────────────────────────────── */
+
+@keyframes ticker {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-ticker {
+  animation: ticker 60s linear infinite;
+  will-change: transform;
+}
+
+.animate-ticker:hover {
+  animation-play-state: paused;
+}
+
 /* ── Scrollbar ──────────────────────────────────── */
 
 ::-webkit-scrollbar {

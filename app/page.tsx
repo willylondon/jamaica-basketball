@@ -48,6 +48,12 @@ return (
 {/* Hero */}
 {heroPost && (
 <section className="mb-10">
+<div className="mb-4 flex items-center gap-3">
+<span className="inline-flex items-center gap-1.5 rounded-full bg-accent/10 border border-accent/20 px-3 py-1 text-xs font-bold uppercase tracking-widest text-accent">
+<span className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse" />
+Top Story
+</span>
+</div>
 <PostCardFeatured post={heroPost} />
 </section>
 )}
