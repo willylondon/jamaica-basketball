@@ -57,6 +57,9 @@ export default function RootLayout({
   return (
     <html lang="en-JM" className="dark">
       <head>
+        <meta name="theme-color" content="#0A0A0A" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link

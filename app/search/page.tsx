@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import Fuse from "fuse.js";
 import { getPublishedPosts } from "@/lib/content";
 import PostCard from "@/components/ui/PostCard";
@@ -22,7 +23,13 @@ const fuse = new Fuse(allPosts, {
 });
 
 export default function SearchPage() {
-    const [query, setQuery] = useState("");
+    const searchParams = useSearchParams();
+    const [query, setQuery] = useState(searchParams.get("q") ?? "");
+
+    useEffect(() => {
+        const q = searchParams.get("q");
+        if (q) setQuery(q);
+    }, [searchParams]);
 
     const results = useMemo(() => {
         if (!query.trim()) return [];

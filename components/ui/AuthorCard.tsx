@@ -15,6 +15,7 @@ export default function AuthorCard({ author }: AuthorCardProps) {
             src={author.image}
             alt={author.name}
             fill
+            sizes="80px"
             className="object-cover"
           />
         </div>
