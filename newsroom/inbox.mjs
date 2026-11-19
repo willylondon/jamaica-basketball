@@ -1,9 +1,8 @@
 import { createHash, createHmac, timingSafeEqual } from "node:crypto";
-import { graph, json, postJson, redis } from "./services.mjs";
+import { graph, instagramHost, json, postJson, redis } from "./services.mjs";
 
 const retention = 30 * 24 * 3600;
 const replyWindow = 23 * 3600_000;
-const instagramHost = "graph.instagram.com";
 const website = "https://jamaicabasketball.online";
 const inbox = "https://business.facebook.com/latest/inbox";
 const numericId = /^\d+$/;
@@ -107,10 +106,10 @@ export async function handleInstagramEvent(event, account, mode) {
         }
         const result = await graph(`${account}/messages`, token, {
           recipient: { id: event.sender }, message: { text: reply },
-        }, "POST", instagramHost);
+        }, "POST", instagramHost());
         if (!result.message_id) throw new Error("Instagram did not confirm the DM");
       } else {
-        const result = await graph(`${event.id}/replies`, token, { message: reply }, "POST", instagramHost);
+        const result = await graph(`${event.id}/replies`, token, { message: reply }, "POST", instagramHost());
         if (!result.id) throw new Error("Instagram did not confirm the comment reply");
       }
       status = "replied";

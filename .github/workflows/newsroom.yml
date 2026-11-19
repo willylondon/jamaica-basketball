@@ -53,6 +53,7 @@ jobs:
           NEWSROOM_PUBLISH_LIVE: ${{ vars.NEWSROOM_PUBLISH_LIVE }}
           META_GRAPH_VERSION: ${{ vars.META_GRAPH_VERSION }}
           IG_ACCOUNT_ID: ${{ vars.IG_ACCOUNT_ID }}
+          IG_API_MODE: ${{ vars.IG_API_MODE }}
           IG_FACEBOOK_LOGIN_ID: ${{ vars.IG_FACEBOOK_LOGIN_ID }}
           IG_DISCOVERY_HANDLES: ${{ vars.IG_DISCOVERY_HANDLES }}
           FB_PAGE_ID: ${{ vars.FB_PAGE_ID }}

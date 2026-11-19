@@ -1,6 +1,6 @@
 import { readdir, readFile } from "node:fs/promises";
 import matter from "gray-matter";
-import { graph, redis } from "./services.mjs";
+import { graph, instagramHost, redis } from "./services.mjs";
 
 const site = "https://jamaicabasketball.online";
 const limits = { instagram: 2000, facebook: 4000 };
@@ -56,13 +56,23 @@ async function target(channel) {
   if (channel === "instagram") {
     const { IG_ACCOUNT_ID: id, IG_ACCESS_TOKEN: token } = process.env;
     if (!idFormat.test(id || "") || !token) throw new Error("Instagram publication is not configured");
-    const host = "graph.instagram.com";
-    const me = await graph("me", token, { fields: "user_id,username" }, "GET", host);
-    if (String(me.user_id) !== id || me.username?.toLowerCase() !== "jamaicabasketball") throw new Error("Instagram account verification failed");
+    const host = instagramHost();
+    const unified = host === "graph.facebook.com";
+    const account = unified
+      ? (await graph("me/assigned_instagram_accounts", token, { fields: "id,username" })).data?.find((entry) => String(entry.id) === id)
+      : await graph("me", token, { fields: "user_id,username" }, "GET", host);
+    if (String(unified ? account?.id : account?.user_id) !== id ||
+        account?.username?.toLowerCase() !== "jamaicabasketball") throw new Error("Instagram account verification failed");
     return { id, token, host };
   }
-  const { FB_PAGE_ID: id, FB_PAGE_ACCESS_TOKEN: token } = process.env;
-  if (!idFormat.test(id || "") || !token) throw new Error("Facebook publication is not configured");
+  const { FB_PAGE_ID: id, FB_PAGE_ACCESS_TOKEN: pageToken, IG_ACCESS_TOKEN: systemToken } = process.env;
+  if (!idFormat.test(id || "")) throw new Error("Facebook publication is not configured");
+  let token = pageToken;
+  if (!token && process.env.IG_API_MODE === "unified" && systemToken) {
+    const { data } = await graph("me/accounts", systemToken, { fields: "id,access_token" });
+    token = data?.find((page) => String(page.id) === id)?.access_token;
+  }
+  if (!token) throw new Error("Facebook publication is not configured");
   const me = await graph("me", token, { fields: "id" });
   if (me.id !== id) throw new Error("Facebook Page verification failed");
   return { id, token };

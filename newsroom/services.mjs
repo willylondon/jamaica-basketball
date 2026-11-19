@@ -37,3 +37,10 @@ export function graph(path, token, params = {}, method = "GET", host = "graph.fa
   }
   return json(url, postJson(params, bearer(token)));
 }
+
+export function instagramHost() {
+  const mode = process.env.IG_API_MODE;
+  if (!mode || mode === "instagram-login") return "graph.instagram.com";
+  if (mode === "unified") return "graph.facebook.com";
+  throw new Error("Unsupported Instagram API mode");
+}

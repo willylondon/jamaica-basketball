@@ -45,7 +45,10 @@ async function searchX() {
 }
 
 async function searchInstagram() {
-  const { IG_DISCOVERY_USER_TOKEN: token, IG_FACEBOOK_LOGIN_ID: id } = process.env;
+  const unified = process.env.IG_API_MODE === "unified";
+  const dedicated = process.env.IG_DISCOVERY_USER_TOKEN || process.env.IG_FACEBOOK_LOGIN_ID;
+  const token = dedicated ? process.env.IG_DISCOVERY_USER_TOKEN : unified && process.env.IG_ACCESS_TOKEN;
+  const id = dedicated ? process.env.IG_FACEBOOK_LOGIN_ID : unified && process.env.IG_ACCOUNT_ID;
   if (!token || !/^\d+$/.test(id || "")) return null;
   const handles = (process.env.IG_DISCOVERY_HANDLES || "").split(",")
     .map((handle) => handle.trim()).filter((handle) => /^[a-zA-Z0-9._]{1,30}$/.test(handle)).slice(0, 8);

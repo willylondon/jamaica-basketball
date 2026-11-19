@@ -19,22 +19,23 @@ Use the repository's `newsroom` environment and restrict it to `main`. Enter cre
 | --- | --- | --- |
 | `BRAVE_SEARCH_API_KEY` | Secret | Brave Search web discovery |
 | `X_BEARER_TOKEN` | Secret | X recent search with read access and a funded project |
-| `IG_DISCOVERY_USER_TOKEN` | Secret | Meta Facebook Login token for Instagram hashtag and Business Discovery |
-| `IG_FACEBOOK_LOGIN_ID` | Variable | Professional account ID returned via the linked Page for Facebook Login discovery |
+| `IG_DISCOVERY_USER_TOKEN` | Optional secret | Dedicated Meta Facebook Login token for Instagram hashtag and Business Discovery |
+| `IG_FACEBOOK_LOGIN_ID` | Optional variable | Professional account ID for the dedicated discovery token |
 | `IG_DISCOVERY_HANDLES` | Optional variable | Up to eight verified public professional handles, comma-separated without @ |
-| `IG_ACCESS_TOKEN` | Secret | Instagram Login token for @jamaicabasketball with publishing permission |
-| `IG_ACCOUNT_ID` | Variable | Instagram Login account ID returned by `/me` for @jamaicabasketball |
-| `FB_PAGE_ACCESS_TOKEN` | Secret | Page access token for Jamaica Basketball with permission to create Page posts |
+| `IG_API_MODE` | Variable | Use `unified` for this Meta app. The earlier Instagram Login setup uses `instagram-login`. |
+| `IG_ACCESS_TOKEN` | Secret | Business Integration System User Access Token for the Jamaica Basketball assets |
+| `IG_ACCOUNT_ID` | Variable | ID for @jamaicabasketball from `/me/assigned_instagram_accounts` with Unified Login |
+| `FB_PAGE_ACCESS_TOKEN` | Optional secret | Page access token for Jamaica Basketball. With Unified Login, the workflow can derive it from the assigned Page using the system-user token. |
 | `FB_PAGE_ID` | Variable | Jamaica Basketball Page ID confirmed in Meta Business Suite |
 | `META_GRAPH_VERSION` | Variable | Supported Graph API version shown in the Meta app dashboard, in the form `v27.0` |
 | `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` | Secrets | Private reports and persistent publication ledger |
 | `NEWSROOM_PUBLISH_LIVE` | Variable | Set to `true` after approving the dry-run and independently checking both targets |
 
-Instagram discovery and publishing use separate Meta login products and can have different account IDs. Confirm professional account status, the Page link, API permissions and access level for the app. Instagram Login publishing uses `instagram_business_basic` and `instagram_business_content_publishing`. Facebook requires a Page token with `pages_manage_posts`, plus the access needed to enumerate and read the managed Page. Start with the workflow's **Verify the Instagram and Facebook account IDs without publishing** input. Compare both resulting IDs with the assets in Meta Business Suite. Verify and renew expiring tokens in the Meta dashboard.
+For the Jamaica Basketball Newsroom app, Unified Login uses `instagram_basic`, `instagram_content_publish` and `instagram_manage_messages`. Facebook posting requires `pages_manage_posts`, `pages_read_engagement` and `pages_show_list`. The approved asset grant must include only the Jamaica Basketball Page and @jamaicabasketball. The default discovery path can try Instagram hashtag search with the same authorized account, subject to Meta's discovery permissions. A dedicated discovery token, when configured, must have its matching account ID. Start with **Verify the Instagram and Facebook account IDs without publishing** and compare both IDs with Meta Business Suite. Verify and renew expiring tokens in the Meta dashboard.
 
 The public repository's Actions logs contain discovery counts and syndication outcomes. Use the private Upstash console to read `jb:reports:<run-id>:<attempt>`, which expires after seven days. Keep the social ledger persistent. If a record is stuck on `sending`, use the Redis console to reconcile `jb:syndication:<channel>:<account-id>:<slug>` against the Page or profile. Record the confirmed post ID if it was published. Clear a claim only after confirming that the channel did not publish it and no workflow is still running.
 
-[GitHub environment secrets](https://docs.github.com/en/actions/how-tos/deploy/configure-and-manage-deployments/manage-environments) · [Brave Search API](https://api-dashboard.search.brave.com/app/documentation/web-search/response-headers) · [X developer console](https://console.x.com/) · [Meta app dashboard](https://developers.facebook.com/apps/) · [Facebook Page publishing](https://developers.facebook.com/docs/graph-api/reference/page/feed/) · [Meta Instagram API collection](https://www.postman.com/meta/instagram/collection/6yqw8pt/instagram-api)
+[GitHub environment secrets](https://docs.github.com/en/actions/how-tos/deploy/configure-and-manage-deployments/manage-environments) · [Brave Search API](https://api-dashboard.search.brave.com/app/documentation/web-search/response-headers) · [X developer console](https://console.x.com/) · [Meta app dashboard](https://developers.facebook.com/apps/1583995230155751/dashboard/) · [Facebook Page publishing](https://developers.facebook.com/docs/graph-api/reference/page/feed/) · [Instagram Unified Login](https://developers.facebook.com/documentation/instagram-platform/instagram-api-with-unified-login/)
 
 ## Vercel and Instagram inbox
 
@@ -44,13 +45,13 @@ Use the Vercel project assigned to `jamaicabasketball.online`. Set the following
 | --- | --- |
 | `META_APP_SECRET` | App secret for the Meta app delivering Instagram webhook events |
 | `META_WEBHOOK_VERIFY_TOKEN` | A random callback verification token also entered in the Meta app |
-| `IG_ACCOUNT_ID`, `IG_ACCESS_TOKEN`, `META_GRAPH_VERSION` | Instagram Login account ID, token and version. Include `instagram_business_manage_messages` for DM replies. |
+| `IG_ACCOUNT_ID`, `IG_ACCESS_TOKEN`, `META_GRAPH_VERSION`, `IG_API_MODE` | The verified Instagram account ID, its token and the API version. Use `unified` for the newsroom app and grant `instagram_manage_messages` for DM replies. |
 | `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | Persistent ledger for status and retry deduplication |
 | `BREVO_API_KEY`, `NEWSROOM_ALERT_FROM`, `NEWSROOM_ALERT_TO` | Transactional email API credential, verified sender email and editor email |
 | `IG_INBOX_MODE` | Start with `observe` for signed events and alerts. Set to `reply` after testing. |
 | `IG_PUBLIC_COMMENT_REPLIES` | Leave unset unless the editor opts in. Requires comment permissions, account subscription and inbox reply mode. |
 
-Set the Instagram callback to `https://jamaicabasketball.online/api/instagram/webhook`. Configure the app's Instagram `messages` field, and subscribe the authorized Instagram professional account to that app. Add the `comments` field and `instagram_business_manage_comments` only if the editor requests alerts or replies for public comments. Verify account delivery using an actual inbound message from a permitted test account. Confirm that a general question or test attachment generates an alert, then verify the narrow approved replies in `reply` mode. Match the permissions and app mode to Meta's access rules.
+Set the Instagram callback to `https://jamaicabasketball.online/api/instagram/webhook`. Configure the app's Instagram `messages` field, and subscribe the authorized Instagram professional account to that app. Add the `comments` field and `instagram_manage_comments` only if the editor requests alerts or replies for public comments. Verify account delivery using an actual inbound message from a permitted test account. Confirm that a general question or test attachment generates an alert, then verify the narrow approved replies in `reply` mode. Match the permissions and app mode to Meta's access rules.
 
 A narrow set of greetings, website questions and tips questions can receive stock replies. Other cases route to the editor through Brevo. Public replies, if enabled, only respond to exact website questions on eligible top-level comments. DM text, usernames and attachments stay in Meta Business Suite. Alerts include a timestamp and reference. The inbox ledger contains hashed event keys and status for 30 days.
 

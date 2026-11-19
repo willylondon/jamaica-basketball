@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 import { handleInstagramEvent, instagramEvents, replyText, signatureMatches } from "./inbox.mjs";
-import { approvedPosts, syndicate } from "./publish.mjs";
+import { approvedPosts, syndicate, verifyTargets } from "./publish.mjs";
 
 function mockedProviders(t, overrides, fetchHandler) {
   const previous = new Map(Object.keys(overrides).map((key) => [key, process.env[key]]));
@@ -32,7 +32,7 @@ function mockedProviders(t, overrides, fetchHandler) {
 }
 
 const redisEnv = { UPSTASH_REDIS_REST_URL: "https://redis.example", UPSTASH_REDIS_REST_TOKEN: "fixture" };
-const metaEnv = { META_GRAPH_VERSION: "v27.0", IG_ACCOUNT_ID: "1", IG_ACCESS_TOKEN: "fixture" };
+const metaEnv = { META_GRAPH_VERSION: "v27.0", IG_API_MODE: "instagram-login", IG_ACCOUNT_ID: "1", IG_ACCESS_TOKEN: "fixture" };
 
 test("only explicit approvals enter the queue and dry-run sends no requests", async (t) => {
   const directory = await mkdtemp(join(tmpdir(), "jb-newsroom-"));
@@ -86,6 +86,26 @@ test("site verification gates publication and an uncertain send stays claimed", 
   assert.deepEqual((await syndicate(posts, true, now)).map(({ status }) => status), ["needs-review", "already-published"]);
   assert.equal(instagramSends, 1);
   assert.equal(facebookSends, 1);
+});
+
+test("Unified Login verifies the assigned Instagram and derives only the configured Page token", async (t) => {
+  let username = "jamaicabasketball";
+  mockedProviders(t, { ...metaEnv, IG_API_MODE: "unified", FB_PAGE_ID: "2", FB_PAGE_ACCESS_TOKEN: "" }, (url, options) => {
+    assert.equal(url.hostname, "graph.facebook.com");
+    assert.equal(options.method, undefined, "Preflight must be read-only");
+    if (url.pathname.endsWith("/assigned_instagram_accounts")) {
+      return Response.json({ data: [{ id: "33", username: "other" }, { id: "1", username }] });
+    }
+    if (url.pathname.endsWith("/me/accounts")) {
+      return Response.json({ data: [{ id: "44", access_token: "other" }, { id: "2", access_token: "page-fixture" }] });
+    }
+    assert.equal(url.pathname, "/v27.0/me");
+    assert.equal(options.headers.Authorization, "Bearer page-fixture");
+    return Response.json({ id: "2" });
+  });
+  assert.deepEqual(await verifyTargets(), [{ channel: "instagram", id: "1" }, { channel: "facebook", id: "2" }]);
+  username = "wrong";
+  await assert.rejects(verifyTargets(), /Instagram account verification failed/);
 });
 
 test("checks the signed raw webhook and ignores echoes and other accounts", () => {
