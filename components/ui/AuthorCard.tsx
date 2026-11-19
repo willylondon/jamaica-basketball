@@ -10,14 +10,25 @@ export default function AuthorCard({ author }: AuthorCardProps) {
   return (
     <div className="my-10 rounded-2xl border border-border bg-surface p-6 md:p-8">
       <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
-        <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-full border-2 border-accent">
-          <Image
-            src={author.image}
-            alt={author.name}
-            fill
-            sizes="80px"
-            className="object-cover"
-          />
+        <div className="relative flex h-20 w-20 flex-shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-accent bg-surface">
+          {author.image ? (
+            <Image
+              src={author.image}
+              alt={author.name}
+              fill
+              sizes="80px"
+              className="object-cover"
+            />
+          ) : (
+            <span aria-hidden="true" className="font-display text-2xl font-bold text-accent">
+              {author.name
+                .split(/\s+/)
+                .map((part) => part[0])
+                .join("")
+                .slice(0, 2)
+                .toUpperCase()}
+            </span>
+          )}
         </div>
         <div className="flex-1">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-2">

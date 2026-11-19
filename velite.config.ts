@@ -8,7 +8,7 @@ const authors = defineCollection({
     slug: s.slug("authors"),
     role: s.string(),
     bio: s.string(),
-    image: s.string(),
+    image: s.string().optional(),
     website: s.string().url().optional(),
     socials: s.object({
       instagram: s.string().optional(),
