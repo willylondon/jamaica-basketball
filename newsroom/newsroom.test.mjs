@@ -32,7 +32,10 @@ function mockedProviders(t, overrides, fetchHandler) {
 }
 
 const redisEnv = { UPSTASH_REDIS_REST_URL: "https://redis.example", UPSTASH_REDIS_REST_TOKEN: "fixture" };
-const metaEnv = { META_GRAPH_VERSION: "v27.0", IG_API_MODE: "instagram-login", IG_ACCOUNT_ID: "1", IG_ACCESS_TOKEN: "fixture" };
+const metaEnv = {
+  META_GRAPH_VERSION: "v27.0", IG_API_MODE: "instagram-login",
+  IG_ACCOUNT_ID: "1", IG_ACCESS_TOKEN: "fixture", NEWSROOM_PUBLISH_CHANNELS: "",
+};
 
 test("only explicit approvals enter the queue and dry-run sends no requests", async (t) => {
   const directory = await mkdtemp(join(tmpdir(), "jb-newsroom-"));
@@ -106,6 +109,30 @@ test("Unified Login verifies the assigned Instagram and derives only the configu
   assert.deepEqual(await verifyTargets(), [{ channel: "instagram", id: "1" }, { channel: "facebook", id: "2" }]);
   username = "wrong";
   await assert.rejects(verifyTargets(), /Instagram account verification failed/);
+});
+
+test("Facebook-only preflight and publication never contact Instagram", async (t) => {
+  const environment = {
+    ...redisEnv, ...metaEnv, NEWSROOM_PUBLISH_CHANNELS: "facebook",
+    FB_PAGE_ID: "2", FB_PAGE_ACCESS_TOKEN: "page-fixture", IG_ACCESS_TOKEN: "",
+  };
+  let sends = 0;
+  mockedProviders(t, environment, (url) => {
+    if (url.hostname === "jamaicabasketball.online") {
+      return new Response('<article data-newsroom-syndication="approved">');
+    }
+    assert.equal(url.hostname, "graph.facebook.com");
+    if (url.pathname === "/v27.0/me") return Response.json({ id: "2" });
+    assert.equal(url.pathname, "/v27.0/2/feed");
+    sends++;
+    return Response.json({ id: "2_30" });
+  });
+  assert.deepEqual(await verifyTargets(), [{ channel: "facebook", id: "2" }]);
+  const posts = [{ slug: "approved", date: "2026-11-19", captions: { instagram: "IG", facebook: "FB" } }];
+  assert.deepEqual(await syndicate(posts, true, new Date("2026-11-19T15:00:00Z")), [
+    { slug: "approved", channel: "facebook", status: "published" },
+  ]);
+  assert.equal(sends, 1);
 });
 
 test("checks the signed raw webhook and ignores echoes and other accounts", () => {

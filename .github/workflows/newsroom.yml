@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       check_targets:
-        description: Verify the Instagram and Facebook account IDs without publishing
+        description: Verify the configured social account IDs without publishing
         type: boolean
         default: false
       syndicate_only:
@@ -51,6 +51,7 @@ jobs:
           CHECK_TARGETS: ${{ inputs.check_targets }}
           SYNDICATE_ONLY: ${{ inputs.syndicate_only }}
           NEWSROOM_PUBLISH_LIVE: ${{ vars.NEWSROOM_PUBLISH_LIVE }}
+          NEWSROOM_PUBLISH_CHANNELS: ${{ vars.NEWSROOM_PUBLISH_CHANNELS }}
           META_GRAPH_VERSION: ${{ vars.META_GRAPH_VERSION }}
           IG_ACCOUNT_ID: ${{ vars.IG_ACCOUNT_ID }}
           IG_API_MODE: ${{ vars.IG_API_MODE }}

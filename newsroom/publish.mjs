@@ -11,6 +11,16 @@ const dateFormat = new Intl.DateTimeFormat("en-CA", {
   timeZone: "America/Jamaica", year: "numeric", month: "2-digit", day: "2-digit",
 });
 
+function configuredChannels() {
+  const setting = process.env.NEWSROOM_PUBLISH_CHANNELS?.trim();
+  if (!setting) return Object.keys(limits);
+  const channels = [...new Set(setting.split(",").map((channel) => channel.trim()))];
+  if (channels.some((channel) => !Object.hasOwn(limits, channel))) {
+    throw new Error("Unknown newsroom publication channel");
+  }
+  return channels;
+}
+
 function publicationDate(value) {
   if (value instanceof Date && Number.isFinite(value.valueOf())) {
     const iso = value.toISOString();
@@ -79,7 +89,7 @@ async function target(channel) {
 }
 
 export async function verifyTargets() {
-  const accounts = await Promise.all(Object.keys(limits).map(async (channel) => {
+  const accounts = await Promise.all(configuredChannels().map(async (channel) => {
     const { id } = await target(channel);
     return { channel, id };
   }));
@@ -105,6 +115,7 @@ async function send(channel, account, caption, url) {
 }
 
 export async function syndicate(posts, live, now = new Date()) {
+  const channels = configuredChannels();
   const today = dateFormat.format(now);
   const cutoff = new Date(Date.parse(today) - 6 * 86400_000).toISOString().slice(0, 10);
   const results = [];
@@ -125,7 +136,8 @@ export async function syndicate(posts, live, now = new Date()) {
       results.push({ slug, status: "waiting-for-site" });
       continue;
     }
-    for (const [channel, caption] of Object.entries(captions)) {
+    for (const channel of channels) {
+      const caption = captions[channel];
       let key;
       let claimed = false;
       try {
