@@ -5,7 +5,6 @@ import { publicationLedger } from "./publication-ledger.mjs";
 
 const site = "https://jamaicabasketball.online";
 const limits = { instagram: 2000, facebook: 4000 };
-const instagramPhoto = "/logo.jpg";
 const placeholderPhoto = /(?:^|[._-])(?:logo|placeholder|og-default)(?:[._-]|$)/i;
 const slugFormat = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const idFormat = /^\d+$/;
@@ -40,7 +39,7 @@ export async function approvedPosts(directory = "content/posts") {
   for (const file of (await readdir(directory)).filter((name) => name.endsWith(".mdx")).sort()) {
     const { data } = matter(await readFile(`${directory}/${file}`, "utf8"));
     if (data.draft !== false || data.syndicate !== true) continue;
-    const { slug, image, instagramCaption, facebookCaption } = data;
+    const { slug, image, instagramImage, instagramCaption, facebookCaption } = data;
     const date = publicationDate(data.date);
     if (typeof slug !== "string" || !slugFormat.test(slug) || slugs.has(slug) || !date) {
       throw new Error(`Invalid or duplicate syndication slug or date in ${file}`);
@@ -52,7 +51,7 @@ export async function approvedPosts(directory = "content/posts") {
       }
     }
     slugs.add(slug);
-    posts.push({ slug, date, image, captions });
+    posts.push({ slug, date, image, instagramImage, captions });
   }
   return posts;
 }
@@ -64,20 +63,39 @@ async function liveArticle(url) {
   return response.text();
 }
 
-async function facebookPreviewMatches(html, image) {
-  if (typeof image !== "string" || !image.trim()) return false;
-  const expected = URL.parse(image, site);
-  if (!expected || expected.origin !== site || expected.username || expected.password || expected.hash ||
-      placeholderPhoto.test(expected.pathname.split("/").at(-1))) return false;
+function articlePhotoUrl(image) {
+  if (typeof image !== "string" || !image.trim()) return null;
+  const url = URL.parse(image, site);
+  if (!url || url.origin !== site || url.username || url.password || url.hash ||
+      placeholderPhoto.test(url.pathname.split("/").at(-1))) return null;
+  return url;
+}
 
+async function photoHeaders(url) {
+  const response = await fetch(url, {
+    method: "HEAD", redirect: "error", cache: "no-store", signal: AbortSignal.timeout(12000),
+  });
+  return response.ok ? response.headers : null;
+}
+
+async function facebookPreviewMatches(html, image) {
+  const expected = articlePhotoUrl(image);
+  if (!expected) return false;
   const previewTag = html.match(/<meta\b[^>]*\sproperty="og:image"[^>]*>/i)?.[0];
   const preview = previewTag?.match(/\scontent="([^"]+)"/i)?.[1].replaceAll("&amp;", "&");
   if (preview !== expected.href) return false;
 
-  const response = await fetch(expected, {
-    method: "HEAD", redirect: "error", cache: "no-store", signal: AbortSignal.timeout(12000),
-  });
-  return response.ok && /^image\/(?:jpeg|png|webp|gif)(?:;|$)/i.test(response.headers.get("content-type") || "");
+  const headers = await photoHeaders(expected);
+  return /^image\/(?:jpeg|png|webp|gif)(?:;|$)/i.test(headers?.get("content-type") || "");
+}
+
+async function instagramPhotoUrl(image) {
+  const url = articlePhotoUrl(image);
+  if (!url) return null;
+  const headers = await photoHeaders(url);
+  if (!/^image\/jpeg(?:;|$)/i.test(headers?.get("content-type") || "") ||
+      Number(headers.get("content-length")) > 8_000_000) return null;
+  return url.href;
 }
 
 async function target(channel) {
@@ -114,11 +132,11 @@ export async function verifyTargets() {
   return accounts;
 }
 
-async function send(channel, account, caption, url) {
+async function send(channel, account, caption, url, photo) {
   const { id, token, host } = account;
   if (channel === "facebook") return graph(`${id}/feed`, token, { message: caption.trim(), link: url }, "POST");
   const container = await graph(`${id}/media`, token, {
-    image_url: `${site}${instagramPhoto}`, caption: `${caption.trim()}\n\n${url}`,
+    image_url: photo, caption: `${caption.trim()}\n\n${url}`,
   }, "POST", host);
   if (!idFormat.test(container.id || "")) throw new Error("Instagram did not return a container ID");
   for (let attempt = 0; attempt < 12; attempt++) {
@@ -138,7 +156,7 @@ export async function syndicate(posts, live, now = new Date()) {
   const cutoff = new Date(Date.parse(today) - 6 * 86400_000).toISOString().slice(0, 10);
   const results = [];
   const accounts = new Map();
-  for (const { slug, date, image, captions } of posts) {
+  for (const { slug, date, image, instagramImage, captions } of posts) {
     if (date < cutoff || date > today) continue;
     const url = `${site}/posts/${slug}`;
     if (!live) {
@@ -159,6 +177,14 @@ export async function syndicate(posts, live, now = new Date()) {
         results.push({ slug, channel, status: "waiting-for-facebook-preview" });
         continue;
       }
+      let photo;
+      if (channel === "instagram") {
+        photo = await instagramPhotoUrl(instagramImage || image).catch(() => null);
+        if (!photo) {
+          results.push({ slug, channel, status: "waiting-for-instagram-photo" });
+          continue;
+        }
+      }
       const caption = captions[channel];
       let claimed = false;
       try {
@@ -171,7 +197,7 @@ export async function syndicate(posts, live, now = new Date()) {
           continue;
         }
         claimed = true;
-        const result = await send(channel, account, caption, url);
+        const result = await send(channel, account, caption, url, photo);
         if (!result.id) throw new Error("Publication response had no ID");
         await ledger.record(result.id);
         results.push({ slug, channel, status: "published" });
