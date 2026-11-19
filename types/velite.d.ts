@@ -15,6 +15,7 @@ declare module "@/.velite" {
         tags: string[];
         image: string;
         imageAlt: string;
+        imagePosition?: string;
         draft: boolean;
         syndicate: boolean;
         featured: boolean;

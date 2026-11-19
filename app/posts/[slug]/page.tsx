@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
             title,
             description,
             url: `${SITE.url}/posts/${post.slug}`,
-            images: [{ url: imageUrl, width: 1200, height: 630, alt: post.imageAlt }],
+            images: [{ url: imageUrl, alt: post.imageAlt }],
             publishedTime: post.date,
             authors: [getAuthorName(post.author)],
         },
@@ -116,7 +116,13 @@ export default async function PostPage({ params }: PageProps) {
                 </header>
                 <figure className="mb-8">
                     <div className="overflow-hidden rounded-xl relative w-full aspect-video">
-                        <CoverImage src={post.image} alt={post.imageAlt} className="object-cover" priority />
+                        <CoverImage
+                            src={post.image}
+                            alt={post.imageAlt}
+                            objectPosition={post.imagePosition}
+                            className="object-cover"
+                            priority
+                        />
                     </div>
                     {imageCredit && (
                         <figcaption className="mt-1.5 text-right text-[0.6875rem] text-text-dim">
