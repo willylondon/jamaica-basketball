@@ -76,14 +76,17 @@ test("site verification gates publication and an uncertain send stays claimed", 
   let deployed = false;
   let instagramSends = 0;
   let facebookSends = 0;
-  const ledger = mockedProviders(t, { ...redisEnv, ...metaEnv, FB_PAGE_ID: "2", FB_PAGE_ACCESS_TOKEN: "fixture" }, (url) => {
+  const ledger = mockedProviders(t, { ...redisEnv, ...metaEnv, FB_PAGE_ID: "2", FB_PAGE_ACCESS_TOKEN: "fixture" }, (url, options) => {
     if (url.hostname === "jamaicabasketball.online") {
       if (url.pathname === featuredPhoto) return new Response(null, { headers: { "content-type": "image/jpeg" } });
       return deployed ? livePost(featuredPhoto) : new Response(null, { status: 404 });
     }
     if (url.href.includes("graph.instagram.com")) {
       if (url.pathname.endsWith("/me")) return Response.json({ user_id: "1", username: "jamaicabasketball" });
-      if (url.pathname.endsWith("/media")) return Response.json({ id: "42" });
+      if (url.pathname.endsWith("/media")) {
+        assert.equal(JSON.parse(options.body).image_url, site + featuredPhoto);
+        return Response.json({ id: "42" });
+      }
       if (url.pathname.endsWith("/42")) return Response.json({ status_code: "FINISHED" });
       if (url.pathname.endsWith("/media_publish")) {
         instagramSends++;
@@ -192,6 +195,40 @@ test("Facebook waits for a matching live photo before contacting Meta or reservi
   assert.deepEqual(await syndicate([approvedPost], true, now), waiting);
   assert.equal(photoChecks, 2);
   assert.equal(ledger.size, 0);
+});
+
+test("Instagram uses the article photo crop and waits if the deployed file is not a JPEG", async (t) => {
+  const env = { ...redisEnv, ...metaEnv, NEWSROOM_PUBLISH_CHANNELS: "instagram" };
+  const now = new Date("2026-11-19T15:00:00Z");
+  const photo = "/images/qualifying-game-instagram.jpg";
+  let mime = "text/html";
+  let sentPhoto;
+  const ledger = mockedProviders(t, env, (url, options) => {
+    if (url.origin === site) {
+      if (url.pathname === "/posts/approved") return livePost(featuredPhoto);
+      assert.equal(url.pathname, photo);
+      assert.equal(options.method, "HEAD");
+      return new Response(null, { headers: { "content-type": mime } });
+    }
+    if (url.pathname.endsWith("/me")) return Response.json({ user_id: "1", username: "jamaicabasketball" });
+    if (url.pathname.endsWith("/media")) {
+      sentPhoto = JSON.parse(options.body).image_url;
+      return Response.json({ id: "42" });
+    }
+    if (url.pathname.endsWith("/42")) return Response.json({ status_code: "FINISHED" });
+    assert.ok(url.pathname.endsWith("/media_publish"));
+    return Response.json({ id: "43" });
+  });
+  const post = { ...approvedPost, instagramImage: photo };
+  assert.deepEqual(await syndicate([post], true, now), [
+    { slug: "approved", channel: "instagram", status: "waiting-for-instagram-photo" },
+  ]);
+  assert.equal(ledger.size, 0);
+  mime = "image/jpeg";
+  assert.deepEqual(await syndicate([post], true, now), [
+    { slug: "approved", channel: "instagram", status: "published" },
+  ]);
+  assert.equal(sentPhoto, site + photo);
 });
 
 test("GitHub ledger claims atomically and retains confirmed or uncertain publication state", async (t) => {

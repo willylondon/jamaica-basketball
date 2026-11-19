@@ -10,6 +10,10 @@ on:
         description: Verify the configured social account IDs without publishing
         type: boolean
         default: false
+      check_instagram:
+        description: Verify the Instagram account and token without publishing
+        type: boolean
+        default: false
       syndicate_only:
         description: Check approved stories for syndication without repeating discovery
         type: boolean
@@ -47,7 +51,9 @@ jobs:
       - name: Run daily workflow
         id: run
         run: |
-          if [[ "$CHECK_TARGETS" == "true" ]]; then
+          if [[ "$CHECK_INSTAGRAM" == "true" ]]; then
+            NEWSROOM_PUBLISH_CHANNELS=instagram node newsroom/daily.mjs --check-targets
+          elif [[ "$CHECK_TARGETS" == "true" ]]; then
             node newsroom/daily.mjs --check-targets
           elif [[ "$LIVE_SWITCH" == "true" && "$MANUAL_DRY_RUN" != "true" ]]; then
             echo "publish=true" >> "$GITHUB_OUTPUT"
@@ -61,6 +67,7 @@ jobs:
           fi
         env:
           CHECK_TARGETS: ${{ inputs.check_targets }}
+          CHECK_INSTAGRAM: ${{ inputs.check_instagram }}
           SYNDICATE_ONLY: ${{ inputs.syndicate_only }}
           MANUAL_DRY_RUN: ${{ inputs.dry_run }}
           LIVE_SWITCH: ${{ vars.NEWSROOM_PUBLISH_LIVE }}
