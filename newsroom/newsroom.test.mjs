@@ -38,18 +38,31 @@ const metaEnv = {
   IG_ACCOUNT_ID: "1", IG_ACCESS_TOKEN: "fixture", NEWSROOM_PUBLISH_CHANNELS: "", NEWSROOM_PUBLICATION_LEDGER: "",
 };
 
+const featuredPhoto = "/images/qualifying-game.jpg";
+const site = "https://jamaicabasketball.online";
+const approvedPost = {
+  slug: "approved", date: "2026-11-19", image: featuredPhoto,
+  captions: { instagram: "IG", facebook: "FB" },
+};
+
+function livePost(preview) {
+  const metadata = preview ? `<meta property="og:image" content="${site}${preview}">` : "";
+  return new Response(`${metadata}<article data-newsroom-syndication="approved">`);
+}
+
 test("only explicit approvals enter the queue and dry-run sends no requests", async (t) => {
   const directory = await mkdtemp(join(tmpdir(), "jb-newsroom-"));
   t.after(() => rm(directory, { recursive: true, force: true }));
   t.mock.method(globalThis, "fetch", () => assert.fail("Dry-run attempted a provider request"));
   const frontmatter = (slug, draft) => [
     "---", `slug: "${slug}"`, 'date: "2026-11-19"', `draft: ${draft}`,
-    "syndicate: true", 'instagramCaption: "Instagram caption"', 'facebookCaption: "Facebook caption"', "---",
+    "syndicate: true", `image: "${featuredPhoto}"`, 'instagramCaption: "Instagram caption"', 'facebookCaption: "Facebook caption"', "---",
   ].join("\n");
   await writeFile(join(directory, "approved.mdx"), frontmatter("approved", false));
   await writeFile(join(directory, "draft.mdx"), frontmatter("draft", true));
   const posts = await approvedPosts(directory);
   assert.equal(posts.length, 1);
+  assert.equal(posts[0].image, featuredPhoto);
   assert.deepEqual(await syndicate(posts, false, new Date("2026-11-20T02:00:00Z")), [
     { slug: "approved", status: "dry-run" },
   ]);
@@ -58,14 +71,15 @@ test("only explicit approvals enter the queue and dry-run sends no requests", as
 });
 
 test("site verification gates publication and an uncertain send stays claimed", async (t) => {
-  const posts = [{ slug: "approved", date: "2026-11-19", captions: { instagram: "IG", facebook: "FB" } }];
+  const posts = [approvedPost];
   const now = new Date("2026-11-19T15:00:00Z");
   let deployed = false;
   let instagramSends = 0;
   let facebookSends = 0;
   const ledger = mockedProviders(t, { ...redisEnv, ...metaEnv, FB_PAGE_ID: "2", FB_PAGE_ACCESS_TOKEN: "fixture" }, (url) => {
     if (url.hostname === "jamaicabasketball.online") {
-      return new Response(deployed ? '<article data-newsroom-syndication="approved">' : "Not found", { status: deployed ? 200 : 404 });
+      if (url.pathname === featuredPhoto) return new Response(null, { headers: { "content-type": "image/jpeg" } });
+      return deployed ? livePost(featuredPhoto) : new Response(null, { status: 404 });
     }
     if (url.href.includes("graph.instagram.com")) {
       if (url.pathname.endsWith("/me")) return Response.json({ user_id: "1", username: "jamaicabasketball" });
@@ -121,7 +135,8 @@ test("Facebook-only preflight and publication never contact Instagram", async (t
   let canPost = true;
   mockedProviders(t, environment, (url) => {
     if (url.hostname === "jamaicabasketball.online") {
-      return new Response('<article data-newsroom-syndication="approved">');
+      if (url.pathname === featuredPhoto) return new Response(null, { headers: { "content-type": "image/jpeg" } });
+      return livePost(featuredPhoto);
     }
     assert.equal(url.hostname, "graph.facebook.com");
     if (url.pathname === "/v27.0/me") {
@@ -133,13 +148,50 @@ test("Facebook-only preflight and publication never contact Instagram", async (t
     return Response.json({ id: "2_30" });
   });
   assert.deepEqual(await verifyTargets(), [{ channel: "facebook", id: "2" }]);
-  const posts = [{ slug: "approved", date: "2026-11-19", captions: { instagram: "IG", facebook: "FB" } }];
+  const posts = [approvedPost];
   assert.deepEqual(await syndicate(posts, true, new Date("2026-11-19T15:00:00Z")), [
     { slug: "approved", channel: "facebook", status: "published" },
   ]);
   assert.equal(sends, 1);
   canPost = false;
   await assert.rejects(verifyTargets(), /posting permission could not be verified/);
+});
+
+test("Facebook waits for a matching live photo before contacting Meta or reserving a post", async (t) => {
+  const env = {
+    ...redisEnv, ...metaEnv, NEWSROOM_PUBLISH_CHANNELS: "facebook",
+    FB_PAGE_ID: "2", FB_PAGE_ACCESS_TOKEN: "fixture",
+  };
+  const now = new Date("2026-11-19T15:00:00Z");
+  let preview;
+  let imageStatus = 404;
+  let mime = "image/jpeg";
+  let photoChecks = 0;
+  const ledger = mockedProviders(t, env, (url, options) => {
+    assert.equal(url.hostname, "jamaicabasketball.online");
+    if (url.pathname === featuredPhoto) {
+      assert.equal(options.method, "HEAD");
+      photoChecks++;
+      return new Response(null, { status: imageStatus, headers: { "content-type": mime } });
+    }
+    assert.equal(url.pathname, "/posts/approved");
+    return livePost(preview);
+  });
+  const waiting = [{ slug: "approved", channel: "facebook", status: "waiting-for-facebook-preview" }];
+  assert.deepEqual(await syndicate([approvedPost], true, now), waiting);
+  preview = "/logo.jpg";
+  assert.deepEqual(await syndicate([approvedPost], true, now), waiting);
+  assert.deepEqual(await syndicate([{ ...approvedPost, image: preview }], true, now), waiting);
+  preview = "/images/another-game.jpg";
+  assert.deepEqual(await syndicate([approvedPost], true, now), waiting);
+  assert.equal(photoChecks, 0);
+  preview = featuredPhoto;
+  assert.deepEqual(await syndicate([approvedPost], true, now), waiting);
+  imageStatus = 200;
+  mime = "text/html";
+  assert.deepEqual(await syndicate([approvedPost], true, now), waiting);
+  assert.equal(photoChecks, 2);
+  assert.equal(ledger.size, 0);
 });
 
 test("GitHub ledger claims atomically and retains confirmed or uncertain publication state", async (t) => {

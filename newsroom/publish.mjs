@@ -5,7 +5,8 @@ import { publicationLedger } from "./publication-ledger.mjs";
 
 const site = "https://jamaicabasketball.online";
 const limits = { instagram: 2000, facebook: 4000 };
-const photo = "/logo.jpg";
+const instagramPhoto = "/logo.jpg";
+const placeholderPhoto = /(?:^|[._-])(?:logo|placeholder|og-default)(?:[._-]|$)/i;
 const slugFormat = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const idFormat = /^\d+$/;
 const dateFormat = new Intl.DateTimeFormat("en-CA", {
@@ -39,7 +40,7 @@ export async function approvedPosts(directory = "content/posts") {
   for (const file of (await readdir(directory)).filter((name) => name.endsWith(".mdx")).sort()) {
     const { data } = matter(await readFile(`${directory}/${file}`, "utf8"));
     if (data.draft !== false || data.syndicate !== true) continue;
-    const { slug, instagramCaption, facebookCaption } = data;
+    const { slug, image, instagramCaption, facebookCaption } = data;
     const date = publicationDate(data.date);
     if (typeof slug !== "string" || !slugFormat.test(slug) || slugs.has(slug) || !date) {
       throw new Error(`Invalid or duplicate syndication slug or date in ${file}`);
@@ -51,16 +52,32 @@ export async function approvedPosts(directory = "content/posts") {
       }
     }
     slugs.add(slug);
-    posts.push({ slug, date, captions });
+    posts.push({ slug, date, image, captions });
   }
   return posts;
 }
 
-async function checkLive(url, slug) {
+async function liveArticle(url) {
   const response = await fetch(url, { redirect: "error", cache: "no-store", signal: AbortSignal.timeout(12000) });
-  if (response.status === 404) return false;
+  if (response.status === 404) return "";
   if (!response.ok) throw new Error("The published site did not respond successfully");
-  return (await response.text()).includes(`data-newsroom-syndication="${slug}"`);
+  return response.text();
+}
+
+async function facebookPreviewMatches(html, image) {
+  if (typeof image !== "string" || !image.trim()) return false;
+  const expected = URL.parse(image, site);
+  if (!expected || expected.origin !== site || expected.username || expected.password || expected.hash ||
+      placeholderPhoto.test(expected.pathname.split("/").at(-1))) return false;
+
+  const previewTag = html.match(/<meta\b[^>]*\sproperty="og:image"[^>]*>/i)?.[0];
+  const preview = previewTag?.match(/\scontent="([^"]+)"/i)?.[1].replaceAll("&amp;", "&");
+  if (preview !== expected.href) return false;
+
+  const response = await fetch(expected, {
+    method: "HEAD", redirect: "error", cache: "no-store", signal: AbortSignal.timeout(12000),
+  });
+  return response.ok && /^image\/(?:jpeg|png|webp|gif)(?:;|$)/i.test(response.headers.get("content-type") || "");
 }
 
 async function target(channel) {
@@ -101,7 +118,7 @@ async function send(channel, account, caption, url) {
   const { id, token, host } = account;
   if (channel === "facebook") return graph(`${id}/feed`, token, { message: caption.trim(), link: url }, "POST");
   const container = await graph(`${id}/media`, token, {
-    image_url: `${site}${photo}`, caption: `${caption.trim()}\n\n${url}`,
+    image_url: `${site}${instagramPhoto}`, caption: `${caption.trim()}\n\n${url}`,
   }, "POST", host);
   if (!idFormat.test(container.id || "")) throw new Error("Instagram did not return a container ID");
   for (let attempt = 0; attempt < 12; attempt++) {
@@ -121,23 +138,27 @@ export async function syndicate(posts, live, now = new Date()) {
   const cutoff = new Date(Date.parse(today) - 6 * 86400_000).toISOString().slice(0, 10);
   const results = [];
   const accounts = new Map();
-  for (const { slug, date, captions } of posts) {
+  for (const { slug, date, image, captions } of posts) {
     if (date < cutoff || date > today) continue;
     const url = `${site}/posts/${slug}`;
     if (!live) {
       results.push({ slug, status: "dry-run" });
       continue;
     }
-    const deployed = await checkLive(url, slug).catch(() => null);
-    if (deployed === null) {
+    const article = await liveArticle(url).catch(() => null);
+    if (article === null) {
       results.push({ slug, status: "site-check-error" });
       continue;
     }
-    if (!deployed) {
+    if (!article.includes(`data-newsroom-syndication="${slug}"`)) {
       results.push({ slug, status: "waiting-for-site" });
       continue;
     }
     for (const channel of channels) {
+      if (channel === "facebook" && !await facebookPreviewMatches(article, image).catch(() => false)) {
+        results.push({ slug, channel, status: "waiting-for-facebook-preview" });
+        continue;
+      }
       const caption = captions[channel];
       let claimed = false;
       try {
