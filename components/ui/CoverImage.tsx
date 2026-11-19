@@ -8,9 +8,10 @@ interface CoverImageProps {
     priority?: boolean;
     sizes?: string;
     className?: string;
+    objectPosition?: string;
 }
 
-export default function CoverImage({ src, alt, priority, sizes, className }: CoverImageProps) {
+export default function CoverImage({ src, alt, priority, sizes, className, objectPosition }: CoverImageProps) {
     const [errored, setErrored] = useState(false);
 
     if (errored) {
@@ -35,6 +36,7 @@ export default function CoverImage({ src, alt, priority, sizes, className }: Cov
             fill
             sizes={sizes}
             className={className}
+            style={{ objectPosition }}
             priority={priority}
             onError={() => setErrored(true)}
         />
