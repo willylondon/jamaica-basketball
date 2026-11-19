@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { getPublishedPosts, CATEGORIES } from "@/lib/content";
+import { LEAGUE_HUBS } from "@/lib/leagues";
 
 const BASE_URL = "https://jamaicabasketball.online";
 
@@ -52,6 +53,24 @@ export default function sitemap(): MetadataRoute.Sitemap {
             priority: 0.5,
         },
         {
+            url: `${BASE_URL}/leagues`,
+            lastModified: new Date(),
+            changeFrequency: "weekly",
+            priority: 0.7,
+        },
+        {
+            url: `${BASE_URL}/search`,
+            lastModified: new Date(),
+            changeFrequency: "monthly",
+            priority: 0.3,
+        },
+        {
+            url: `${BASE_URL}/privacy`,
+            lastModified: new Date(),
+            changeFrequency: "yearly",
+            priority: 0.2,
+        },
+        {
             url: `${BASE_URL}/about`,
             lastModified: new Date(),
             changeFrequency: "monthly",
@@ -65,5 +84,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
         },
     ];
 
-    return [...staticPages, ...categoryEntries, ...postEntries];
+    const leagueEntries: MetadataRoute.Sitemap = LEAGUE_HUBS.map((hub) => ({
+        url: `${BASE_URL}/leagues/${hub.slug}`,
+        lastModified: new Date(),
+        changeFrequency: "weekly",
+        priority: 0.6,
+    }));
+
+    return [...staticPages, ...categoryEntries, ...leagueEntries, ...postEntries];
 }

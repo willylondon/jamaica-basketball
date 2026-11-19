@@ -1,9 +1,0 @@
-# *
-User-agent: *
-Allow: /
-
-# Host
-Host: https://jamaicabasketball.online
-
-# Sitemaps
-Sitemap: https://jamaicabasketball.online/sitemap.xml

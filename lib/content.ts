@@ -9,7 +9,7 @@ export type Author = {
   slug: string;
   role: string;
   bio: string;
-  image: string;
+  image?: string;
   website?: string;
   socials?: {
     instagram?: string;
