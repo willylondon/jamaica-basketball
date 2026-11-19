@@ -1,6 +1,7 @@
 import { readdir, readFile } from "node:fs/promises";
 import matter from "gray-matter";
-import { graph, instagramHost, redis } from "./services.mjs";
+import { graph, instagramHost } from "./services.mjs";
+import { publicationLedger } from "./publication-ledger.mjs";
 
 const site = "https://jamaicabasketball.online";
 const limits = { instagram: 2000, facebook: 4000 };
@@ -10,6 +11,16 @@ const idFormat = /^\d+$/;
 const dateFormat = new Intl.DateTimeFormat("en-CA", {
   timeZone: "America/Jamaica", year: "numeric", month: "2-digit", day: "2-digit",
 });
+
+function configuredChannels() {
+  const setting = process.env.NEWSROOM_PUBLISH_CHANNELS?.trim();
+  if (!setting) return Object.keys(limits);
+  const channels = [...new Set(setting.split(",").map((channel) => channel.trim()))];
+  if (channels.some((channel) => !Object.hasOwn(limits, channel))) {
+    throw new Error("Unknown newsroom publication channel");
+  }
+  return channels;
+}
 
 function publicationDate(value) {
   if (value instanceof Date && Number.isFinite(value.valueOf())) {
@@ -73,13 +84,13 @@ async function target(channel) {
     token = data?.find((page) => String(page.id) === id)?.access_token;
   }
   if (!token) throw new Error("Facebook publication is not configured");
-  const me = await graph("me", token, { fields: "id" });
-  if (me.id !== id) throw new Error("Facebook Page verification failed");
+  const me = await graph("me", token, { fields: "id,can_post" });
+  if (me.id !== id || me.can_post !== true) throw new Error("Facebook Page ID or posting permission could not be verified");
   return { id, token };
 }
 
 export async function verifyTargets() {
-  const accounts = await Promise.all(Object.keys(limits).map(async (channel) => {
+  const accounts = await Promise.all(configuredChannels().map(async (channel) => {
     const { id } = await target(channel);
     return { channel, id };
   }));
@@ -105,6 +116,7 @@ async function send(channel, account, caption, url) {
 }
 
 export async function syndicate(posts, live, now = new Date()) {
+  const channels = configuredChannels();
   const today = dateFormat.format(now);
   const cutoff = new Date(Date.parse(today) - 6 * 86400_000).toISOString().slice(0, 10);
   const results = [];
@@ -125,23 +137,22 @@ export async function syndicate(posts, live, now = new Date()) {
       results.push({ slug, status: "waiting-for-site" });
       continue;
     }
-    for (const [channel, caption] of Object.entries(captions)) {
-      let key;
+    for (const channel of channels) {
+      const caption = captions[channel];
       let claimed = false;
       try {
         if (!accounts.has(channel)) accounts.set(channel, await target(channel));
         const account = accounts.get(channel);
-        key = `jb:syndication:${channel}:${account.id}:${slug}`;
-        claimed = await redis("SET", key, "sending", "NX") === "OK";
-        if (!claimed) {
-          const saved = await redis("GET", key);
-          const previous = saved && saved !== "sending" ? JSON.parse(saved) : null;
-          results.push({ slug, channel, status: previous?.publicationId ? "already-published" : "needs-review" });
+        const ledger = publicationLedger(`jb:syndication:${channel}:${account.id}:${slug}`);
+        const reservation = await ledger.reserve();
+        if (reservation !== "reserved") {
+          results.push({ slug, channel, status: reservation });
           continue;
         }
+        claimed = true;
         const result = await send(channel, account, caption, url);
         if (!result.id) throw new Error("Publication response had no ID");
-        await redis("SET", key, JSON.stringify({ publicationId: result.id, at: new Date().toISOString() }));
+        await ledger.record(result.id);
         results.push({ slug, channel, status: "published" });
       } catch {
         results.push({ slug, channel, status: claimed ? "needs-review" : "configuration-or-service-error" });
