@@ -36,9 +36,12 @@ collections:
           hint: "Longer summary for internal reference and social previews." }
       - { label: Subheadline (Dek), name: dek, widget: text, required: false,
           hint: "Optional subheadline displayed below the title on the article page." }
-      - { label: Featured Image, name: image, widget: image, required: true }
+      - { label: Featured Image, name: image, widget: image, required: true,
+          hint: "Use a real photo relevant to the story that is cleared for website and social use." }
       - { label: Image Alt Text, name: imageAlt, widget: string, required: true,
           hint: "Describe the image for accessibility." }
+      - { label: Image Credit, name: imageCredit, widget: string, required: false,
+          hint: "Credit the photographer or agency and identify the original context of archival photos." }
       - { label: Publish Date, name: date, widget: datetime, required: true }
       - { label: Updated Date, name: updated, widget: datetime, required: false }
       - { label: Author, name: author, widget: select, default: "jamaica-basketball",
@@ -78,7 +81,7 @@ collections:
       - { label: Canonical URL, name: canonicalUrl, widget: string, required: false,
           hint: "Only set if republished from another URL." }
       - { label: OG Image, name: ogImage, widget: image, required: false,
-          hint: "Override social sharing image. Leave blank to use featured image." }
+          hint: "Leave blank to share the featured photo. Use a version of that photo prepared for social sharing if needed." }
       - { label: Keywords, name: keywords, widget: list, required: false, allow_add: true,
           hint: "SEO keywords. Optional — tags usually suffice." }
 

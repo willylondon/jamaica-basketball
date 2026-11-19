@@ -10,9 +10,10 @@ Verify all information from: FIBA, Jamaica Basketball Association, ISSA, Caribbe
 **If unverifiable → omit it. Never invent.**
 
 ## Image Policy
-- Only real, publicly obtainable images (league media, press photos, team social, sports photography)
-- **Never generate AI images** — use site placeholder or publish without image
-- Never fabricate event photography or player images
+- Source a real photograph for every new article and substantive update. Look first for the actual event, team, player in the relevant uniform, or venue. Use a relevant archival photo with its original context identified when a current photo is unavailable.
+- Use a photo we own, a photo with a reusable license that covers the intended website and social use, or a photo with explicit permission from the rights holder for that use. Confirm permission for the exact photo. Record the source, photographer or agency, and license or permission in the editorial record.
+- Add descriptive alt text, the required public credit, and a link to the original photo source when available. Frame the same photo for the thumbnail, article cover, and sharing preview.
+- Keep the story in draft if a suitable photo is unavailable or its permissions are unclear. An editor can approve a time-sensitive exception. Use authentic photography for editorial images.
 
 ## SEO Keyword Strategy (Ahrefs-style)
 For every article determine: **Primary Keyword, Secondary Keywords, Related Keywords, Long-tail Keywords**
@@ -64,6 +65,7 @@ Recommended league/program tags:
 - [ ] Every statistic is real
 - [ ] Every date is correct
 - [ ] No fact was invented
+- [ ] Photo subject, permissions, credit, thumbnail crop and sharing preview checked
 - [ ] Primary keyword in title, slug, first 100 words
 
 ## Workflow Notes
