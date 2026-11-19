@@ -81,7 +81,7 @@ export default async function PostPage({ params }: PageProps) {
                     { name: post.title, url: `${SITE.url}/posts/${post.slug}` },
                 ]}
             />
-            <article className="mx-auto max-w-4xl px-4 py-8 lg:px-8">
+            <article className="mx-auto max-w-4xl px-4 py-8 lg:px-8" data-newsroom-syndication={post.syndicate ? post.slug : undefined}>
                 <Breadcrumbs items={[{ label: categoryLabel, href: `/category/${post.category}` }, { label: post.title }]} />
                 <header className="mb-8">
                     <CategoryBadge category={post.category} size="md" />

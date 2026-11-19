@@ -64,6 +64,9 @@ collections:
       - { label: Breaking, name: breaking, widget: boolean, default: false,
           hint: "Mark as breaking news." }
       - { label: Draft, name: draft, widget: boolean, default: false }
+      - { label: Syndicate on Instagram and Facebook, name: syndicate, widget: boolean, default: false, required: false }
+      - { label: Instagram caption, name: instagramCaption, widget: text, required: false }
+      - { label: Facebook caption, name: facebookCaption, widget: text, required: false }
       - { label: Body, name: body, widget: markdown }
 
       # ── SEO overrides (collapsed, optional) ──

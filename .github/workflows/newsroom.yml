@@ -1,0 +1,58 @@
+name: Jamaica Basketball newsroom
+
+on:
+  schedule:
+    - cron: "15 7 * * *"
+      timezone: "America/Jamaica"
+  workflow_dispatch:
+    inputs:
+      check_targets:
+        description: Verify the Instagram and Facebook account IDs without publishing
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: jamaica-basketball-newsroom
+  cancel-in-progress: false
+
+jobs:
+  newsroom:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: newsroom
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: node --test newsroom/newsroom.test.mjs
+      - name: Run daily workflow
+        run: |
+          if [[ "$CHECK_TARGETS" == "true" ]]; then
+            node newsroom/daily.mjs --check-targets
+          else
+            node newsroom/daily.mjs --live
+          fi
+        env:
+          CHECK_TARGETS: ${{ inputs.check_targets }}
+          NEWSROOM_PUBLISH_LIVE: ${{ vars.NEWSROOM_PUBLISH_LIVE }}
+          META_GRAPH_VERSION: ${{ vars.META_GRAPH_VERSION }}
+          IG_ACCOUNT_ID: ${{ vars.IG_ACCOUNT_ID }}
+          IG_FACEBOOK_LOGIN_ID: ${{ vars.IG_FACEBOOK_LOGIN_ID }}
+          IG_DISCOVERY_HANDLES: ${{ vars.IG_DISCOVERY_HANDLES }}
+          FB_PAGE_ID: ${{ vars.FB_PAGE_ID }}
+          BRAVE_SEARCH_API_KEY: ${{ secrets.BRAVE_SEARCH_API_KEY }}
+          X_BEARER_TOKEN: ${{ secrets.X_BEARER_TOKEN }}
+          IG_DISCOVERY_USER_TOKEN: ${{ secrets.IG_DISCOVERY_USER_TOKEN }}
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          FB_PAGE_ACCESS_TOKEN: ${{ secrets.FB_PAGE_ACCESS_TOKEN }}
+          UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
+          UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}

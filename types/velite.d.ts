@@ -16,6 +16,7 @@ declare module "@/.velite" {
         image: string;
         imageAlt: string;
         draft: boolean;
+        syndicate: boolean;
         featured: boolean;
         breaking: boolean;
         seoTitle?: string;
