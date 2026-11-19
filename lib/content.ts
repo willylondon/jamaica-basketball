@@ -31,7 +31,15 @@ export function getAllAuthors(): Author[] {
 
 /** Return author by slug */
 export function getAuthorBySlug(slug: string): Author | undefined {
-  return allAuthors.find((a) => a.slug === slug);
+  // Older posts stored the display name ("Jamaica Basketball") instead of a slug.
+  const key = slug.trim().toLowerCase();
+  return allAuthors.find((a) => a.slug === key || a.name.toLowerCase() === key)
+    ?? allAuthors.find((a) => a.slug === key.replace(/\s+/g, "-"));
+}
+
+/** Display name for a post's author slug, falling back to the raw value. */
+export function getAuthorName(slug: string): string {
+  return getAuthorBySlug(slug)?.name ?? slug;
 }
 
 export const CATEGORIES = [

@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
-  <title id="title">Norman Powell Jamaica debut vs Costa Rica</title>
-  <desc id="desc">Matchup graphic for Jamaica versus Costa Rica featuring Norman Powell's Jamaica debut.</desc>
+  <title id="title">Norman Powell, Jamaica vs Costa Rica</title>
+  <desc id="desc">Matchup graphic for Jamaica versus Costa Rica featuring Norman Powell's 34 points in overtime.</desc>
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0%" stop-color="#05151d"/>
@@ -18,7 +18,7 @@
 
   <text x="120" y="170" fill="#f4f1e8" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700" letter-spacing="5">PLAYER SPOTLIGHT</text>
   <text x="120" y="248" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="76" font-weight="800">NORMAN POWELL</text>
-  <text x="120" y="316" fill="#f2cc67" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700" letter-spacing="3">34 POINTS ON JAMAICA DEBUT</text>
+  <text x="120" y="316" fill="#f2cc67" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700" letter-spacing="3">34 POINTS IN OT WIN OVER COSTA RICA</text>
 
   <g transform="translate(120 388)">
     <rect x="0" y="0" width="360" height="320" rx="28" fill="#121820" stroke="#2f3b46" stroke-width="3"/>

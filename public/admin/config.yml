@@ -41,7 +41,8 @@ collections:
           hint: "Describe the image for accessibility." }
       - { label: Publish Date, name: date, widget: datetime, required: true }
       - { label: Updated Date, name: updated, widget: datetime, required: false }
-      - { label: Author, name: author, widget: string, default: "Jamaica Basketball" }
+      - { label: Author, name: author, widget: select, default: "jamaica-basketball",
+          options: [{ label: "Jamaica Basketball Team", value: "jamaica-basketball" }, { label: "Willy London", value: "willy-london" }] }
       - label: Category
         name: category
         widget: select

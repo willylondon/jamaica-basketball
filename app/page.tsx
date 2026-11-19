@@ -4,7 +4,7 @@ import PostCardFeatured from "@/components/ui/PostCardFeatured";
 import PostCard from "@/components/ui/PostCard";
 import SocialCta from "@/components/ui/SocialCta";
 import SponsorPlaceholder from "@/components/ui/SponsorPlaceholder";
-import { getPublishedPosts, getFeaturedPosts, getPostsByCategory, getTrendingPosts, CATEGORIES } from "@/lib/content";
+import { getPublishedPosts, getFeaturedPosts, getPostsByCategory, getTrendingPosts, getAuthorName, CATEGORIES } from "@/lib/content";
 import { LEAGUE_HUBS, getPostsForLeagueHub } from "@/lib/leagues";
 import { SITE } from "@/lib/utils";
 
@@ -193,7 +193,7 @@ More →
 {post.dek && (
 <p className="mt-1 text-sm text-text-muted line-clamp-2">{post.dek}</p>
 )}
-<p className="mt-2 text-xs text-text-dim">{post.author}</p>
+<p className="mt-2 text-xs text-text-dim">{getAuthorName(post.author)}</p>
 </div>
 </article>
 ))}
@@ -227,7 +227,7 @@ More →
 {post.dek && (
 <p className="mt-1 text-sm text-text-muted line-clamp-2">{post.dek}</p>
 )}
-<p className="mt-2 text-xs text-text-dim">{post.author}</p>
+<p className="mt-2 text-xs text-text-dim">{getAuthorName(post.author)}</p>
 </div>
 </article>
 ))}

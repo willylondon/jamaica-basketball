@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { getPostBySlug, getPublishedPosts, getRelatedPosts, getCategoryLabel, getAuthorBySlug } from "@/lib/content";
+import { getPostBySlug, getPublishedPosts, getRelatedPosts, getCategoryLabel, getAuthorBySlug, getAuthorName } from "@/lib/content";
 import { formatDate, SITE } from "@/lib/utils";
 import Breadcrumbs from "@/components/ui/Breadcrumbs";
 import CategoryBadge from "@/components/ui/CategoryBadge";
@@ -37,7 +37,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
             url: `${SITE.url}/posts/${post.slug}`,
             images: [{ url: imageUrl, width: 1200, height: 630, alt: post.imageAlt }],
             publishedTime: post.date,
-            authors: [post.author],
+            authors: [getAuthorName(post.author)],
         },
         twitter: { card: "summary_large_image", title, description, images: [imageUrl] },
         alternates: { canonical: post.canonicalUrl || `${SITE.url}/posts/${post.slug}` },
@@ -72,7 +72,7 @@ export default async function PostPage({ params }: PageProps) {
                 image={post.ogImage || post.image}
                 datePublished={post.date}
                 dateModified={post.updated}
-                author={post.author}
+                author={author?.name ?? post.author}
             />
             <BreadcrumbJsonLd
                 items={[
@@ -88,7 +88,7 @@ export default async function PostPage({ params }: PageProps) {
                     <h1 className="mt-4 font-display text-3xl md:text-5xl font-extrabold leading-tight text-text">{post.title}</h1>
                     {post.dek && <p className="mt-3 text-lg text-text-muted max-w-2xl">{post.dek}</p>}
                     <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-text-muted">
-                        <span className="font-medium text-text">{post.author}</span>
+                        <span className="font-medium text-text">{author?.name ?? post.author}</span>
                         <span className="text-text-dim">·</span>
                         <time dateTime={post.date}>{formatDate(post.date)}</time>
                         {readingTime && (
