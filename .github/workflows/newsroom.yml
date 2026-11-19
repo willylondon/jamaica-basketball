@@ -14,6 +14,10 @@ on:
         description: Check approved stories for syndication without repeating discovery
         type: boolean
         default: false
+      dry_run:
+        description: Keep this manual run in dry-run even if scheduled publishing is enabled
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -28,30 +32,39 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     environment: newsroom
+    outputs:
+      publish: ${{ steps.run.outputs.publish }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
         with:
           node-version: 24
           cache: npm
       - run: npm ci
       - run: node --test newsroom/newsroom.test.mjs
       - name: Run daily workflow
+        id: run
         run: |
           if [[ "$CHECK_TARGETS" == "true" ]]; then
             node newsroom/daily.mjs --check-targets
+          elif [[ "$LIVE_SWITCH" == "true" && "$MANUAL_DRY_RUN" != "true" ]]; then
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+            if [[ "$SYNDICATE_ONLY" != "true" ]]; then
+              node newsroom/daily.mjs --discovery-only
+            fi
           elif [[ "$SYNDICATE_ONLY" == "true" ]]; then
-            node newsroom/daily.mjs --live --syndicate-only
+            node newsroom/daily.mjs --syndicate-only
           else
-            node newsroom/daily.mjs --live
+            node newsroom/daily.mjs
           fi
         env:
           CHECK_TARGETS: ${{ inputs.check_targets }}
           SYNDICATE_ONLY: ${{ inputs.syndicate_only }}
-          NEWSROOM_PUBLISH_LIVE: ${{ vars.NEWSROOM_PUBLISH_LIVE }}
-          NEWSROOM_PUBLISH_CHANNELS: ${{ vars.NEWSROOM_PUBLISH_CHANNELS }}
+          MANUAL_DRY_RUN: ${{ inputs.dry_run }}
+          LIVE_SWITCH: ${{ vars.NEWSROOM_PUBLISH_LIVE }}
+          NEWSROOM_PUBLISH_CHANNELS: ${{ vars.NEWSROOM_PUBLISH_CHANNELS || 'facebook' }}
           META_GRAPH_VERSION: ${{ vars.META_GRAPH_VERSION }}
           IG_ACCOUNT_ID: ${{ vars.IG_ACCOUNT_ID }}
           IG_API_MODE: ${{ vars.IG_API_MODE }}
@@ -62,6 +75,39 @@ jobs:
           X_BEARER_TOKEN: ${{ secrets.X_BEARER_TOKEN }}
           IG_DISCOVERY_USER_TOKEN: ${{ secrets.IG_DISCOVERY_USER_TOKEN }}
           IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
-          FB_PAGE_ACCESS_TOKEN: ${{ secrets.FB_PAGE_ACCESS_TOKEN }}
+          FB_PAGE_ACCESS_TOKEN: ${{ inputs.check_targets && secrets.FB_PAGE_ACCESS_TOKEN || '' }}
           UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
           UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
+
+  publish:
+    needs: newsroom
+    if: ${{ !cancelled() && github.ref == 'refs/heads/main' && needs.newsroom.outputs.publish == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: newsroom
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Publish and record receipts
+        run: |
+          export NEWSROOM_LEDGER_TREE="$(git rev-parse HEAD^{tree})"
+          node newsroom/daily.mjs --live --syndicate-only
+        env:
+          NEWSROOM_PUBLICATION_LEDGER: github
+          NEWSROOM_LEDGER_TOKEN: ${{ github.token }}
+          NEWSROOM_PUBLISH_LIVE: ${{ vars.NEWSROOM_PUBLISH_LIVE }}
+          NEWSROOM_PUBLISH_CHANNELS: ${{ vars.NEWSROOM_PUBLISH_CHANNELS || 'facebook' }}
+          META_GRAPH_VERSION: ${{ vars.META_GRAPH_VERSION }}
+          IG_API_MODE: ${{ vars.IG_API_MODE }}
+          IG_ACCOUNT_ID: ${{ vars.IG_ACCOUNT_ID }}
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          FB_PAGE_ID: ${{ vars.FB_PAGE_ID }}
+          FB_PAGE_ACCESS_TOKEN: ${{ secrets.FB_PAGE_ACCESS_TOKEN }}

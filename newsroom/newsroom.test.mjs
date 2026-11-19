@@ -6,6 +6,7 @@ import { join } from "node:path";
 import { test } from "node:test";
 import { handleInstagramEvent, instagramEvents, replyText, signatureMatches } from "./inbox.mjs";
 import { approvedPosts, syndicate, verifyTargets } from "./publish.mjs";
+import { publicationLedger } from "./publication-ledger.mjs";
 
 function mockedProviders(t, overrides, fetchHandler) {
   const previous = new Map(Object.keys(overrides).map((key) => [key, process.env[key]]));
@@ -34,7 +35,7 @@ function mockedProviders(t, overrides, fetchHandler) {
 const redisEnv = { UPSTASH_REDIS_REST_URL: "https://redis.example", UPSTASH_REDIS_REST_TOKEN: "fixture" };
 const metaEnv = {
   META_GRAPH_VERSION: "v27.0", IG_API_MODE: "instagram-login",
-  IG_ACCOUNT_ID: "1", IG_ACCESS_TOKEN: "fixture", NEWSROOM_PUBLISH_CHANNELS: "",
+  IG_ACCOUNT_ID: "1", IG_ACCESS_TOKEN: "fixture", NEWSROOM_PUBLISH_CHANNELS: "", NEWSROOM_PUBLICATION_LEDGER: "",
 };
 
 test("only explicit approvals enter the queue and dry-run sends no requests", async (t) => {
@@ -75,7 +76,7 @@ test("site verification gates publication and an uncertain send stays claimed", 
         throw new Error("Unconfirmed provider response");
       }
     }
-    if (url.pathname.endsWith("/me")) return Response.json({ id: "2" });
+    if (url.pathname.endsWith("/me")) return Response.json({ id: "2", can_post: true });
     if (url.pathname.endsWith("/feed")) {
       facebookSends++;
       return Response.json({ id: "2_27" });
@@ -104,7 +105,7 @@ test("Unified Login verifies the assigned Instagram and derives only the configu
     }
     assert.equal(url.pathname, "/v27.0/me");
     assert.equal(options.headers.Authorization, "Bearer page-fixture");
-    return Response.json({ id: "2" });
+    return Response.json({ id: "2", can_post: true });
   });
   assert.deepEqual(await verifyTargets(), [{ channel: "instagram", id: "1" }, { channel: "facebook", id: "2" }]);
   username = "wrong";
@@ -117,12 +118,16 @@ test("Facebook-only preflight and publication never contact Instagram", async (t
     FB_PAGE_ID: "2", FB_PAGE_ACCESS_TOKEN: "page-fixture", IG_ACCESS_TOKEN: "",
   };
   let sends = 0;
+  let canPost = true;
   mockedProviders(t, environment, (url) => {
     if (url.hostname === "jamaicabasketball.online") {
       return new Response('<article data-newsroom-syndication="approved">');
     }
     assert.equal(url.hostname, "graph.facebook.com");
-    if (url.pathname === "/v27.0/me") return Response.json({ id: "2" });
+    if (url.pathname === "/v27.0/me") {
+      assert.equal(url.searchParams.get("fields"), "id,can_post");
+      return Response.json({ id: "2", can_post: canPost });
+    }
     assert.equal(url.pathname, "/v27.0/2/feed");
     sends++;
     return Response.json({ id: "2_30" });
@@ -133,6 +138,65 @@ test("Facebook-only preflight and publication never contact Instagram", async (t
     { slug: "approved", channel: "facebook", status: "published" },
   ]);
   assert.equal(sends, 1);
+  canPost = false;
+  await assert.rejects(verifyTargets(), /posting permission could not be verified/);
+});
+
+test("GitHub ledger claims atomically and retains confirmed or uncertain publication state", async (t) => {
+  const original = "a".repeat(40);
+  const receipt = "b".repeat(40);
+  const environment = {
+    NEWSROOM_PUBLICATION_LEDGER: "github", NEWSROOM_LEDGER_TOKEN: "ledger-fixture",
+    GITHUB_REPOSITORY: "example/newsroom", GITHUB_REF: "refs/heads/main",
+    GITHUB_SHA: original, NEWSROOM_LEDGER_TREE: "c".repeat(40),
+  };
+  const refs = new Map();
+  const commits = new Map([[original, { message: "Source commit" }]]);
+  let allowReceipt = true;
+  mockedProviders(t, environment, (url, options) => {
+    assert.equal(url.hostname, "api.github.com");
+    assert.equal(options.headers.Authorization, "Bearer ledger-fixture");
+    const base = "/repos/example/newsroom/git/";
+    assert(url.pathname.startsWith(base));
+    const path = url.pathname.slice(base.length);
+    if (path === "refs" && options.method === "POST") {
+      const { ref, sha } = JSON.parse(options.body);
+      assert.match(ref, /^refs\/newsroom\/publications\/[a-f0-9]{64}$/);
+      assert.equal(sha, original);
+      if (refs.has(ref)) return Response.json({}, { status: 422 });
+      refs.set(ref, sha);
+      return Response.json({}, { status: 201 });
+    }
+    if (path.startsWith("ref/") && options.method === "GET") {
+      const ref = "refs/" + path.slice(4);
+      return Response.json({ ref, object: { sha: refs.get(ref), type: "commit" } });
+    }
+    if (path === "commits" && options.method === "POST") {
+      if (!allowReceipt) return Response.json({}, { status: 503 });
+      const commit = JSON.parse(options.body);
+      assert.deepEqual(commit.parents, [original]);
+      assert.equal(commit.tree, environment.NEWSROOM_LEDGER_TREE);
+      assert.match(commit.message, /^Jamaica Basketball publication receipt [a-f0-9]{64}\n\n2_30$/);
+      commits.set(receipt, commit);
+      return Response.json({ sha: receipt }, { status: 201 });
+    }
+    if (path.startsWith("commits/") && options.method === "GET") return Response.json(commits.get(path.slice(8)));
+    assert.equal(options.method, "PATCH");
+    assert.match(path, /^refs\/newsroom\/publications\//);
+    assert.deepEqual(JSON.parse(options.body), { sha: receipt, force: false });
+    refs.set(path, receipt);
+    return Response.json({});
+  });
+  const first = publicationLedger("jb:syndication:facebook:2:approved");
+  const second = publicationLedger("jb:syndication:facebook:2:approved");
+  assert.deepEqual((await Promise.all([first.reserve(), second.reserve()])).sort(), ["needs-review", "reserved"]);
+  await first.record("2_30");
+  assert.equal(await second.reserve(), "already-published");
+  const uncertain = publicationLedger("jb:syndication:facebook:2:another");
+  assert.equal(await uncertain.reserve(), "reserved");
+  allowReceipt = false;
+  await assert.rejects(uncertain.record("2_31"), /receipt could not be created/);
+  assert.equal(await uncertain.reserve(), "needs-review");
 });
 
 test("checks the signed raw webhook and ignores echoes and other accounts", () => {
