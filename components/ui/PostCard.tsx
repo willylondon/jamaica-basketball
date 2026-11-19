@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getCategoryLabel } from "@/lib/content";
+import { getCategoryLabel, getAuthorName } from "@/lib/content";
 import { formatDate } from "@/lib/utils";
 import type { Post } from "@/lib/content";
 import CoverImage from "@/components/ui/CoverImage";
@@ -49,7 +49,7 @@ export default function PostCard({ post, priority = false }: PostCardProps) {
                 )}
                 <div className="mt-auto flex items-center justify-between pt-4 text-xs text-text-dim">
                     <time dateTime={post.date}>{formatDate(post.date)}</time>
-                    <span className="font-medium text-text-dim truncate ml-2 max-w-[120px]">{post.author}</span>
+                    <span className="font-medium text-text-dim truncate ml-2 max-w-[120px]">{getAuthorName(post.author)}</span>
                 </div>
             </div>
         </article>

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getCategoryLabel } from "@/lib/content";
+import { getCategoryLabel, getAuthorName } from "@/lib/content";
 import { formatDate } from "@/lib/utils";
 import type { Post } from "@/lib/content";
 import CoverImage from "@/components/ui/CoverImage";
@@ -51,7 +51,7 @@ export default function PostCardFeatured({ post }: PostCardFeaturedProps) {
                         <div className="flex items-center gap-3 text-xs text-white/60">
                             <time dateTime={post.date}>{formatDate(post.date)}</time>
                             <span className="text-white/30">·</span>
-                            <span>{post.author}</span>
+                            <span>{getAuthorName(post.author)}</span>
                             {readingTime && (
                                 <>
                                     <span className="text-white/30">·</span>
