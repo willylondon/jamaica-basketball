@@ -14,6 +14,10 @@ on:
         description: Verify the Instagram account and token without publishing
         type: boolean
         default: false
+      check_telegram:
+        description: Verify the Telegram bot, group, and deletion permission without sending
+        type: boolean
+        default: false
       syndicate_only:
         description: Check approved stories for syndication without repeating discovery
         type: boolean
@@ -51,7 +55,9 @@ jobs:
       - name: Run daily workflow
         id: run
         run: |
-          if [[ "$CHECK_INSTAGRAM" == "true" ]]; then
+          if [[ "$CHECK_TELEGRAM" == "true" ]]; then
+            NEWSROOM_PUBLISH_CHANNELS=telegram node newsroom/daily.mjs --check-targets
+          elif [[ "$CHECK_INSTAGRAM" == "true" ]]; then
             NEWSROOM_PUBLISH_CHANNELS=instagram node newsroom/daily.mjs --check-targets
           elif [[ "$CHECK_TARGETS" == "true" ]]; then
             node newsroom/daily.mjs --check-targets
@@ -67,6 +73,7 @@ jobs:
           fi
         env:
           CHECK_TARGETS: ${{ inputs.check_targets }}
+          CHECK_TELEGRAM: ${{ inputs.check_telegram }}
           CHECK_INSTAGRAM: ${{ inputs.check_instagram }}
           SYNDICATE_ONLY: ${{ inputs.syndicate_only }}
           MANUAL_DRY_RUN: ${{ inputs.dry_run }}
@@ -83,6 +90,8 @@ jobs:
           IG_DISCOVERY_USER_TOKEN: ${{ secrets.IG_DISCOVERY_USER_TOKEN }}
           IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
           FB_PAGE_ACCESS_TOKEN: ${{ inputs.check_targets && secrets.FB_PAGE_ACCESS_TOKEN || '' }}
+          TELEGRAM_BOT_TOKEN: ${{ (inputs.check_telegram || inputs.check_targets) && secrets.TELEGRAM_BOT_TOKEN || '' }}
+          TELEGRAM_GROUP_ID: ${{ vars.TELEGRAM_GROUP_ID }}
           UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
           UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
 
@@ -110,6 +119,9 @@ jobs:
         env:
           NEWSROOM_PUBLICATION_LEDGER: github
           NEWSROOM_LEDGER_TOKEN: ${{ github.token }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_GROUP_ID: ${{ vars.TELEGRAM_GROUP_ID }}
+          TELEGRAM_START_DATE: ${{ vars.TELEGRAM_START_DATE }}
           NEWSROOM_PUBLISH_LIVE: ${{ vars.NEWSROOM_PUBLISH_LIVE }}
           NEWSROOM_PUBLISH_CHANNELS: ${{ vars.NEWSROOM_PUBLISH_CHANNELS || 'facebook' }}
           META_GRAPH_VERSION: ${{ vars.META_GRAPH_VERSION }}
