@@ -7,6 +7,7 @@ import { test } from "node:test";
 import { handleInstagramEvent, instagramEvents, replyText, signatureMatches } from "./inbox.mjs";
 import { approvedPosts, syndicate, verifyTargets } from "./publish.mjs";
 import { publicationLedger } from "./publication-ledger.mjs";
+import { matchesTelegramSecret, moderateTelegramUpdate } from "./telegram-moderation.mjs";
 
 function mockedProviders(t, overrides, fetchHandler) {
   const previous = new Map(Object.keys(overrides).map((key) => [key, process.env[key]]));
@@ -336,4 +337,58 @@ test("only approved DM text gets an automatic reply and private text stays out o
   assert.equal(replies, 1);
   assert.equal(alerts, 3);
   assert(!JSON.stringify([...ledger]).includes(privateText));
+});
+
+test("Telegram moderation is limited to the chosen group and ignores ordinary basketball chat", async (t) => {
+  const deleted = [];
+  const config = { id: "-100700", token: "123456:telegram_fixture_only_not_a_real_token" };
+  t.mock.method(globalThis, "fetch", (url, options) => {
+    assert.equal(new URL(url).hostname, "api.telegram.org");
+    assert.ok(new URL(url).pathname.endsWith("/deleteMessage"));
+    deleted.push(JSON.parse(options.body));
+    return Response.json({ ok: true, result: true });
+  });
+  const entry = (text, id, chat = -100700) => ({
+    message_id: id, text, chat: { id: chat, type: "supergroup" }, from: { id: 44 },
+  });
+  assert.ok(matchesTelegramSecret("fixture", "fixture"));
+  assert.equal(matchesTelegramSecret("fixture", "wrong"), false);
+  await moderateTelegramUpdate({ message: entry("Shut up, you idiot", 1, -100701) }, config);
+  await moderateTelegramUpdate({ message: entry("Pass to the assistant captain", 2) }, config);
+  await moderateTelegramUpdate({ message: entry("What a great shot https://www.fiba.basketball", 3) }, config);
+  await moderateTelegramUpdate({ message: entry("Shut up, you idiot", 4) }, config);
+  await moderateTelegramUpdate({ edited_message: { ...entry(undefined, 5), caption: "join our group t.me/+bad" } }, config);
+  assert.deepEqual(deleted, [{ chat_id: "-100700", message_id: 4 }, { chat_id: "-100700", message_id: 5 }]);
+});
+
+test("Telegram verifies its destination, skips old stories, and records each sent update once", async (t) => {
+  const env = {
+    ...redisEnv, ...metaEnv, NEWSROOM_PUBLISH_CHANNELS: "telegram",
+    TELEGRAM_BOT_TOKEN: "123456:telegram_fixture_only_not_a_real_token",
+    TELEGRAM_GROUP_ID: "-100700", TELEGRAM_START_DATE: "2026-11-19",
+  };
+  const now = new Date("2026-11-19T15:00:00Z");
+  let sent = 0;
+  const posts = [
+    { ...approvedPost, slug: "old", date: "2026-11-18" },
+    { ...approvedPost, title: "Game recap", excerpt: "Jamaica won." },
+  ];
+  mockedProviders(t, env, (url, options) => {
+    if (url.origin === site) return new Response(`<article data-newsroom-syndication="${url.pathname.split("/").at(-1)}">`);
+    assert.equal(url.hostname, "api.telegram.org");
+    const body = JSON.parse(options.body);
+    const reply = result => Response.json({ ok: true, result });
+    if (url.pathname.endsWith("/getMe")) return reply({ id: 88, username: "Jamaicabasketball_Bot", is_bot: true });
+    assert.equal(body.chat_id, "-100700");
+    if (url.pathname.endsWith("/getChat")) return reply({ id: -100700, type: "supergroup" });
+    if (url.pathname.endsWith("/getChatMember")) return reply({ status: "administrator", can_delete_messages: true });
+    assert.ok(url.pathname.endsWith("/sendMessage"));
+    assert.equal(body.text, `Game recap\n\nJamaica won.\n\n${site}/posts/approved`);
+    sent++;
+    return reply({ message_id: 99 });
+  });
+  assert.deepEqual(await verifyTargets(), [{ channel: "telegram", id: "-100700" }]);
+  assert.deepEqual(await syndicate(posts, true, now), [{ slug: "approved", channel: "telegram", status: "published" }]);
+  assert.deepEqual(await syndicate(posts, true, now), [{ slug: "approved", channel: "telegram", status: "already-published" }]);
+  assert.equal(sent, 1);
 });

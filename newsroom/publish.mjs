@@ -2,9 +2,11 @@ import { readdir, readFile } from "node:fs/promises";
 import matter from "gray-matter";
 import { graph, instagramHost } from "./services.mjs";
 import { publicationLedger } from "./publication-ledger.mjs";
+import { telegram, verifyTelegramTarget } from "./telegram.mjs";
 
 const site = "https://jamaicabasketball.online";
 const limits = { instagram: 2000, facebook: 4000 };
+const channelsSupported = [...Object.keys(limits), "telegram"];
 const placeholderPhoto = /(?:^|[._-])(?:logo|placeholder|og-default)(?:[._-]|$)/i;
 const slugFormat = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const idFormat = /^\d+$/;
@@ -16,7 +18,7 @@ function configuredChannels() {
   const setting = process.env.NEWSROOM_PUBLISH_CHANNELS?.trim();
   if (!setting) return Object.keys(limits);
   const channels = [...new Set(setting.split(",").map((channel) => channel.trim()))];
-  if (channels.some((channel) => !Object.hasOwn(limits, channel))) {
+  if (channels.some((channel) => !channelsSupported.includes(channel))) {
     throw new Error("Unknown newsroom publication channel");
   }
   return channels;
@@ -39,7 +41,7 @@ export async function approvedPosts(directory = "content/posts") {
   for (const file of (await readdir(directory)).filter((name) => name.endsWith(".mdx")).sort()) {
     const { data } = matter(await readFile(`${directory}/${file}`, "utf8"));
     if (data.draft !== false || data.syndicate !== true) continue;
-    const { slug, image, instagramImage, instagramCaption, facebookCaption } = data;
+    const { slug, title, excerpt, image, instagramImage, instagramCaption, facebookCaption } = data;
     const date = publicationDate(data.date);
     if (typeof slug !== "string" || !slugFormat.test(slug) || slugs.has(slug) || !date) {
       throw new Error(`Invalid or duplicate syndication slug or date in ${file}`);
@@ -51,7 +53,7 @@ export async function approvedPosts(directory = "content/posts") {
       }
     }
     slugs.add(slug);
-    posts.push({ slug, date, image, instagramImage, captions });
+    posts.push({ slug, date, title, excerpt, image, instagramImage, captions });
   }
   return posts;
 }
@@ -99,6 +101,7 @@ async function instagramPhotoUrl(image) {
 }
 
 async function target(channel) {
+  if (channel === "telegram") return verifyTelegramTarget();
   if (channel === "instagram") {
     const { IG_ACCOUNT_ID: id, IG_ACCESS_TOKEN: token } = process.env;
     if (!idFormat.test(id || "") || !token) throw new Error("Instagram publication is not configured");
@@ -134,6 +137,10 @@ export async function verifyTargets() {
 
 async function send(channel, account, caption, url, photo) {
   const { id, token, host } = account;
+  if (channel === "telegram") {
+    const sent = await telegram("sendMessage", token, { chat_id: id, text: `${caption}\n\n${url}`, link_preview_options: { url } });
+    return { id: String(sent?.message_id || "") };
+  }
   if (channel === "facebook") return graph(`${id}/feed`, token, { message: caption.trim(), link: url }, "POST");
   const container = await graph(`${id}/media`, token, {
     image_url: photo, caption: `${caption.trim()}\n\n${url}`,
@@ -156,7 +163,8 @@ export async function syndicate(posts, live, now = new Date()) {
   const cutoff = new Date(Date.parse(today) - 6 * 86400_000).toISOString().slice(0, 10);
   const results = [];
   const accounts = new Map();
-  for (const { slug, date, image, instagramImage, captions } of posts) {
+  const telegramStart = process.env.TELEGRAM_START_DATE;
+  for (const { slug, date, title, excerpt, image, instagramImage, captions } of posts) {
     if (date < cutoff || date > today) continue;
     const url = `${site}/posts/${slug}`;
     if (!live) {
@@ -173,6 +181,7 @@ export async function syndicate(posts, live, now = new Date()) {
       continue;
     }
     for (const channel of channels) {
+      if (channel === "telegram" && (!telegramStart || publicationDate(telegramStart) !== telegramStart || date < telegramStart)) continue;
       if (channel === "facebook" && !await facebookPreviewMatches(article, image).catch(() => false)) {
         results.push({ slug, channel, status: "waiting-for-facebook-preview" });
         continue;
@@ -185,7 +194,7 @@ export async function syndicate(posts, live, now = new Date()) {
           continue;
         }
       }
-      const caption = captions[channel];
+      const caption = channel === "telegram" ? [title || slug, excerpt].filter(Boolean).join("\n\n").slice(0, 3600) : captions[channel];
       let claimed = false;
       try {
         if (!accounts.has(channel)) accounts.set(channel, await target(channel));

@@ -72,3 +72,13 @@ npm run build
 ```
 
 The local dry-run reads only configured discovery providers and saves `.newsroom/daily.json`. It skips all external publication. Keep keys in their respective credential stores. Use a local ignored environment file only for authorized development.
+
+## Telegram group
+
+Use the Jamaica Basketball bot in the selected group. Make the bot an administrator with Delete Messages access. Configure the bot token as an encrypted secret on GitHub and Vercel. Use the verified Telegram group ID in both places.
+
+- In GitHub’s `newsroom` environment, set the `TELEGRAM_BOT_TOKEN` secret and the `TELEGRAM_GROUP_ID` and `TELEGRAM_START_DATE` variables. The start date is the first eligible article date in Jamaica in YYYY-MM-DD form. It prevents older stories from filling a new group. Use **Verify the Telegram bot, group, and deletion permission without sending** before adding `telegram` to the existing publication channels.
+- In production Vercel, set `TELEGRAM_BOT_TOKEN`, `TELEGRAM_GROUP_ID`, and a separate generated `TELEGRAM_WEBHOOK_SECRET`. Register the Telegram webhook at `https://jamaicabasketball.online/api/telegram/webhook` with that secret and only `message` and `edited_message` updates.
+- The bot removes messages and captions matching clear profanity, direct insults, suspicious solicitations, or third-party group invite links. If the production Redis provider is configured, it also detects floods and repeats. That counter uses short-lived hashed identifiers and message fingerprints. The application does not log chat text or ban members. Admins can handle ambiguous cases directly in Telegram.
+
+[Telegram Bot API](https://core.telegram.org/bots/api#setwebhook) · [Telegram group message delivery](https://core.telegram.org/bots/faq#what-messages-will-my-bot-get)
