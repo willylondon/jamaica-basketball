@@ -1,3 +1,4 @@
+import { handleTelegramCommunityUpdate } from "@/newsroom/telegram-community.mjs";
 import { matchesTelegramSecret, moderateTelegramUpdate } from "@/newsroom/telegram-moderation.mjs";
 import { telegramConfigured, telegramGroupId } from "@/newsroom/telegram.mjs";
 
@@ -22,6 +23,7 @@ export async function POST(request: Request) {
 
     try {
         await moderateTelegramUpdate(update, { id, token });
+        await handleTelegramCommunityUpdate(update, { id, token });
         return new Response("OK");
     } catch {
         console.error("Telegram moderation action needs retry");

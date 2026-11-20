@@ -81,4 +81,6 @@ Use the Jamaica Basketball bot in the selected group. Make the bot an administra
 - In production Vercel, set `TELEGRAM_BOT_TOKEN`, `TELEGRAM_GROUP_ID`, and a separate generated `TELEGRAM_WEBHOOK_SECRET`. Register the Telegram webhook at `https://jamaicabasketball.online/api/telegram/webhook` with that secret and only `message` and `edited_message` updates.
 - The bot removes messages and captions matching clear profanity, direct insults, suspicious solicitations, or third-party group invite links. If the production Redis provider is configured, it also detects floods and repeats. That counter uses short-lived hashed identifiers and message fingerprints. The application does not log chat text or ban members. Admins can handle ambiguous cases directly in Telegram.
 
+- In private chat with the bot, group members can use `/report <group message link> <reason>` or `/tip <details>`. The group owner must start the bot in private chat to receive submissions. The bot verifies membership, delivers submissions to the owner via Telegram and acknowledges confirmed delivery. Tips and reports do not appear in the group.
+
 [Telegram Bot API](https://core.telegram.org/bots/api#setwebhook) · [Telegram group message delivery](https://core.telegram.org/bots/faq#what-messages-will-my-bot-get)
