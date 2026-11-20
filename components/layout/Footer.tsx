@@ -117,6 +117,16 @@ export default function Footer() {
                             <li><Link href="/about" className="text-sm text-text-muted transition-colors hover:text-text">About</Link></li>
                             <li><Link href="/contact" className="text-sm text-text-muted transition-colors hover:text-text">Contact</Link></li>
                             <li>
+                                <a
+                                    href={SITE.socials.telegram}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-sm text-text-muted transition-colors hover:text-text"
+                                >
+                                    Join the Telegram group
+                                </a>
+                            </li>
+                            <li>
                                 <a href="/feed.xml" className="text-sm text-text-muted transition-colors hover:text-text">
                                     RSS Feed
                                 </a>
