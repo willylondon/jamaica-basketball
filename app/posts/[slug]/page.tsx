@@ -7,7 +7,7 @@ import CategoryBadge from "@/components/ui/CategoryBadge";
 import PostCard from "@/components/ui/PostCard";
 import AuthorCard from "@/components/ui/AuthorCard";
 import { ArticleJsonLd, BreadcrumbJsonLd } from "@/components/seo/JsonLd";
-import CoverImage from "@/components/ui/CoverImage";
+import PostCover from "@/components/ui/PostCover";
 import ReadingProgress from "@/components/ui/ReadingProgress";
 import { MDXContent } from "@/components/mdx-content";
 
@@ -85,10 +85,10 @@ export default async function PostPage({ params }: PageProps) {
                 <Breadcrumbs items={[{ label: categoryLabel, href: `/category/${post.category}` }, { label: post.title }]} />
                 <header className="mb-8">
                     <CategoryBadge category={post.category} size="md" />
-                    <h1 className="mt-4 font-display text-3xl md:text-5xl font-extrabold leading-tight text-text">{post.title}</h1>
-                    {post.dek && <p className="mt-3 text-lg text-text-muted max-w-2xl">{post.dek}</p>}
-                    <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-text-muted">
-                        <span className="font-medium text-text">{author?.name ?? post.author}</span>
+                    <h1 className="mt-3 text-[clamp(2.5rem,6vw,4.5rem)] font-bold leading-[0.98] text-text">{post.title}</h1>
+                    {post.dek && <p className="mt-4 max-w-3xl text-lg leading-normal text-text-muted md:text-[1.3125rem]">{post.dek}</p>}
+                    <div className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-border pb-6 text-sm text-text-dim">
+                        <span className="font-semibold text-text">{author?.name ?? post.author}</span>
                         <span className="text-text-dim">·</span>
                         <time dateTime={post.date}>{formatDate(post.date)}</time>
                         {readingTime && (
@@ -107,32 +107,26 @@ export default async function PostPage({ params }: PageProps) {
                     {post.tags && post.tags.length > 0 && (
                         <div className="mt-4 flex flex-wrap gap-2">
                             {post.tags.map((tag: string) => (
-                                <span key={tag} className="rounded-full border border-border bg-surface px-3 py-1 text-xs font-medium text-text-dim">
-                                    #{tag}
+                                <span key={tag} className="rounded-full bg-surface px-3 py-1 text-xs font-medium text-text-dim">
+                                    {tag}
                                 </span>
                             ))}
                         </div>
                     )}
                 </header>
                 <figure className="mb-8">
-                    <div className="overflow-hidden rounded-xl relative w-full aspect-video">
-                        <CoverImage
-                            src={post.image}
-                            alt={post.imageAlt}
-                            objectPosition={post.imagePosition}
-                            className="object-cover"
-                            priority
-                        />
+                    <div className="relative aspect-video w-full overflow-hidden rounded-md bg-surface">
+                        <PostCover post={post} size="lead" sizes="(max-width: 896px) 100vw, 896px" priority />
                     </div>
                     {imageCredit && (
-                        <figcaption className="mt-1.5 text-right text-[0.6875rem] text-text-dim">
+                        <figcaption className="mt-2 text-right text-xs text-text-dim">
                             {imageCredit}
                         </figcaption>
                     )}
                 </figure>
                 {showToc && (
-                    <nav className="mb-8 rounded-xl border border-border bg-surface p-5" aria-label="Table of contents">
-                        <h2 className="mb-3 text-xs font-bold uppercase tracking-widest text-accent">In This Article</h2>
+                    <nav className="mb-10 rounded-md bg-surface p-5" aria-label="Table of contents">
+                        <h2 className="kicker mb-3 text-accent">In this article</h2>
                         <ul className="space-y-1.5">
                             {headings.map((h: any) => (
                                 <li key={h.id} className={h.level === 3 ? "ml-4" : ""}><a href={`#${h.id}`} className="text-sm text-text-muted transition-colors hover:text-accent">{h.text}</a></li>
@@ -140,15 +134,22 @@ export default async function PostPage({ params }: PageProps) {
                         </ul>
                     </nav>
                 )}
-                <div className="article-body prose prose-invert max-w-none"><MDXContent code={post.body} /></div>
+                <div className="article-body max-w-[42rem]"><MDXContent code={post.body} /></div>
+                <aside aria-label="Editorial standards" className="mt-10 max-w-[42rem] rounded-md border border-border-hover p-5 text-[0.9375rem] leading-relaxed text-text-muted">
+                    <strong className="text-text">Our standards.</strong> Results, quotes and figures are checked against FIBA, JABA, ISSA or named reporting, and corrections are noted on the story. Spot an error?{" "}
+                    <a href={`mailto:${SITE.contactEmail}?subject=${encodeURIComponent(`Correction: ${post.title}`)}`} className="font-semibold text-accent underline underline-offset-2 hover:text-accent-hover">
+                        Tell the editors
+                    </a>
+                    .
+                </aside>
                 {author && <AuthorCard author={author} />}
-                <div className="mt-8 flex items-center gap-3 border-t border-border pt-6">
+                <div className="mt-8 flex flex-wrap items-center gap-2.5 border-t border-border pt-6">
                     <span className="text-sm font-medium text-text-muted">Share:</span>
                     <a
                         href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(post.title)}&url=${encodeURIComponent(`${SITE.url}/posts/${post.slug}`)}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-text-muted transition-colors hover:border-accent/40 hover:text-accent"
+                        className="flex h-11 items-center rounded-full border border-border-hover px-4 text-sm font-semibold text-text transition-colors hover:border-ink hover:bg-ink hover:text-ink-text"
                     >
                         X / Twitter
                     </a>
@@ -156,7 +157,7 @@ export default async function PostPage({ params }: PageProps) {
                         href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(`${SITE.url}/posts/${post.slug}`)}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-text-muted transition-colors hover:border-accent/40 hover:text-accent"
+                        className="flex h-11 items-center rounded-full border border-border-hover px-4 text-sm font-semibold text-text transition-colors hover:border-ink hover:bg-ink hover:text-ink-text"
                     >
                         Facebook
                     </a>
@@ -164,7 +165,7 @@ export default async function PostPage({ params }: PageProps) {
                         href={`https://wa.me/?text=${encodeURIComponent(`${post.title} ${SITE.url}/posts/${post.slug}`)}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-text-muted transition-colors hover:border-accent/40 hover:text-accent"
+                        className="flex h-11 items-center rounded-full border border-border-hover px-4 text-sm font-semibold text-text transition-colors hover:border-ink hover:bg-ink hover:text-ink-text"
                     >
                         WhatsApp
                     </a>
@@ -172,8 +173,8 @@ export default async function PostPage({ params }: PageProps) {
             </article>
             {relatedPosts.length > 0 && (
                 <section className="mx-auto max-w-7xl px-4 py-10 lg:px-8">
-                    <h2 className="mb-6 font-display text-xl font-bold text-text">Related Stories</h2>
-                    <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                    <div className="section-head"><h2>Related stories</h2></div>
+                    <div className="grid gap-x-7 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
                         {relatedPosts.map((p) => (<PostCard key={p.slug} post={p} />))}
                     </div>
                 </section>

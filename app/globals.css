@@ -1,79 +1,167 @@
 @import "tailwindcss";
 
 @theme {
-  /* Colors */
-  --color-bg: #0A0A0A;
-  --color-surface: #141414;
-  --color-surface-hover: #1E1E1E;
-  --color-border: #2A2A2A;
-  --color-border-hover: #3A3A3A;
-  --color-text: #F5F5F5;
-  --color-text-muted: #A3A3A3;
-  --color-text-dim: #737373;
-  --color-accent: #F5B800;
-  --color-accent-hover: #FFD54F;
-  --color-accent-subtle: rgba(245, 184, 0, 0.12);
-  --color-accent-glow: rgba(245, 184, 0, 0.15);
+  /* Page colors (light editorial theme) */
+  --color-bg: #FFFFFF;
+  --color-surface: #F3F4F1;
+  --color-surface-hover: #E9EBE6;
+  --color-border: #E3E5E1;
+  --color-border-hover: #D5D8D3;
+  --color-text: #111412;
+  --color-text-muted: #3D423E;
+  --color-text-dim: #5A605B;
+
+  /* Jamaica green: links, labels, buttons. White text on it passes AA. */
+  --color-accent: #0B7A3E;
+  --color-accent-hover: #08602F;
+  --color-accent-subtle: rgba(11, 122, 62, 0.1);
+  --color-accent-glow: rgba(11, 122, 62, 0.15);
+  --color-on-accent: #FFFFFF;
+
+  /* Ink bands (score strip, briefing, footer). Gold is only used on ink. */
+  --color-ink: #111412;
+  --color-ink-raised: #1C201D;
+  --color-ink-line: #2B2F2C;
+  --color-ink-text: #E8EAE6;
+  --color-ink-muted: #A9AEA9;
+  --color-gold: #F5B800;
+  --color-gold-hover: #FFCB2E;
 
   /* Fonts */
-  --font-display: "Outfit", sans-serif;
-  --font-body: "Inter", sans-serif;
+  --font-display: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --font-body: "Inter", system-ui, sans-serif;
+  --font-serif: "Source Serif 4", Georgia, serif;
 }
 
 /* ── Base ───────────────────────────────────────── */
 
-html {
-  scroll-behavior: smooth;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    font-family: var(--font-body);
+    background-color: var(--color-bg);
+    color: var(--color-text);
+  }
+
+  ::selection {
+    background-color: var(--color-gold);
+    color: var(--color-ink);
+  }
+
+  /* ── Typography ─────────────────────────────────── */
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -0.005em;
+  }
+
+  h1 {
+    font-size: clamp(2.25rem, 5vw, 4rem);
+  }
+
+  h2 {
+    font-size: clamp(1.6rem, 3.2vw, 2.25rem);
+  }
+
+  h3 {
+    font-size: clamp(1.25rem, 2.5vw, 1.6rem);
+  }
+
+  p {
+    line-height: 1.75;
+    color: var(--color-text);
+  }
+
+  /* ── Links ──────────────────────────────────────── */
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
 }
 
-body {
-  font-family: var(--font-body);
-  background-color: var(--color-bg);
-  color: var(--color-text);
-}
+@layer components {
+  /* Section headings: heavy rule above, condensed uppercase title. */
+  .section-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem;
+    border-top: 3px solid var(--color-ink);
+    padding-top: 0.75rem;
+    margin-bottom: 1.25rem;
+  }
 
-::selection {
-  background-color: var(--color-accent);
-  color: #0A0A0A;
-}
+  .section-head h2 {
+    margin: 0;
+    font-size: 2.125rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
 
-/* ── Typography ─────────────────────────────────── */
+  .kicker {
+    font-family: var(--font-body);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
 
-h1,
-h2,
-h3,
-h4 {
-  font-family: var(--font-display);
-  font-weight: 700;
-  line-height: 1.15;
-  letter-spacing: -0.02em;
-}
+  /* Data tables used on the homepage and hubs. */
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9375rem;
+    font-variant-numeric: tabular-nums;
+  }
 
-h1 {
-  font-size: clamp(1.75rem, 4vw, 3rem);
-  font-weight: 800;
-}
+  .data-table th {
+    padding: 0.5rem;
+    border-bottom: 1px solid var(--color-ink);
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-text-dim);
+  }
 
-h2 {
-  font-size: clamp(1.35rem, 3vw, 2rem);
-}
+  .data-table td {
+    padding: 0.75rem 0.5rem;
+    border-bottom: 1px solid var(--color-border);
+  }
 
-h3 {
-  font-size: clamp(1.125rem, 2.5vw, 1.5rem);
-}
+  .data-table th:first-child,
+  .data-table td:first-child {
+    padding-left: 0;
+  }
 
-p {
-  line-height: 1.75;
-  color: var(--color-text);
-}
+  .data-table th:last-child,
+  .data-table td:last-child {
+    padding-right: 0;
+    text-align: right;
+  }
 
-/* ── Links ──────────────────────────────────────── */
+  /* Horizontal scrollers (score strip) that should not show a scrollbar. */
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
 
-a {
-  color: inherit;
-  text-decoration: none;
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 /* ── Article body (MDX rendered content) ────────── */
@@ -91,17 +179,28 @@ a {
 }
 
 .article-body p {
-  margin-bottom: 1.25rem;
-  font-size: 1.0625rem;
-  line-height: 1.8;
-  color: var(--color-text-muted);
+  margin-bottom: 1.375rem;
+  font-family: var(--font-serif);
+  font-size: 1.1875rem;
+  line-height: 1.7;
+  color: #262A27;
 }
 
 .article-body ul,
 .article-body ol {
-  margin-bottom: 1.25rem;
+  margin-bottom: 1.375rem;
   padding-left: 1.5rem;
-  color: var(--color-text-muted);
+  font-family: var(--font-serif);
+  font-size: 1.125rem;
+  color: #262A27;
+}
+
+.article-body ul {
+  list-style: disc;
+}
+
+.article-body ol {
+  list-style: decimal;
 }
 
 /* ── Focus styles ───────────────────────────────── */
@@ -118,14 +217,20 @@ a {
 }
 
 .article-body blockquote {
-  border-left: 3px solid var(--color-accent);
-  margin: 2rem 0;
-  padding: 1rem 1.5rem;
-  background: var(--color-surface);
-  border-radius: 0 0.5rem 0.5rem 0;
-  font-style: italic;
-  font-size: 1.125rem;
+  margin: 2.5rem 0;
+  padding: 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 2rem;
+  line-height: 1.15;
   color: var(--color-text);
+}
+
+.article-body blockquote p {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  color: inherit;
 }
 
 .article-body strong {

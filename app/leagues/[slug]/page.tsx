@@ -55,7 +55,7 @@ export default async function LeagueHubPage({ params }: PageProps) {
                         Competition Snapshot
                     </h2>
                     <p className="mt-2 text-sm text-text-muted">
-                        Competition layers pulled from the Jamaica Basketball datasheets and research files.
+                        The competitions and age groups this hub covers.
                     </p>
                     <div className="mt-5 grid gap-3 sm:grid-cols-2">
                         <div className="rounded-xl border border-border bg-bg/40 p-4">

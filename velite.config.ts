@@ -47,6 +47,8 @@ const posts = defineCollection({
     imageAlt: s.string(),
     imageCredit: s.string().optional(),
     imagePosition: s.string().optional(),
+    coverStat: s.string().max(12).optional(),
+    coverLabel: s.string().max(60).optional(),
     draft: s.boolean().default(false),
     syndicate: s.boolean().default(false),
     featured: s.boolean().default(false),

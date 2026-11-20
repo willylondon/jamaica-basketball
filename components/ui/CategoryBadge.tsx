@@ -14,8 +14,8 @@ export default function CategoryBadge({
     linked = true,
 }: CategoryBadgeProps) {
     const classes = cn(
-        "inline-block rounded-full font-bold uppercase tracking-wider text-accent bg-accent-subtle transition-colors hover:bg-accent hover:text-black",
-        size === "sm" ? "px-2.5 py-1 text-[0.625rem]" : "px-3 py-1.5 text-xs"
+        "inline-block font-bold uppercase tracking-[0.08em] text-accent transition-colors hover:text-accent-hover",
+        size === "sm" ? "text-xs" : "text-[0.8125rem]"
     );
 
     if (linked) {

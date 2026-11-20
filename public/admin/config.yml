@@ -42,6 +42,10 @@ collections:
           hint: "Describe the image for accessibility." }
       - { label: Image Credit, name: imageCredit, widget: string, required: false,
           hint: "Credit the photographer or agency and identify the original context of archival photos." }
+      - { label: Cover Stat, name: coverStat, widget: string, required: false,
+          hint: "Optional. A short score or number (e.g. 2–4, 34 PTS, 4th) shown as a typographic cover instead of the photo. Max 12 characters." }
+      - { label: Cover Label, name: coverLabel, widget: string, required: false,
+          hint: "Optional. Small label above the cover stat, e.g. World Cup Qualifiers · Group B." }
       - { label: Publish Date, name: date, widget: datetime, required: true }
       - { label: Updated Date, name: updated, widget: datetime, required: false }
       - { label: Author, name: author, widget: select, default: "jamaica-basketball",
