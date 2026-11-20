@@ -12,6 +12,14 @@ export default function SocialCta() {
             </p>
             <div className="flex flex-wrap items-center justify-center gap-3">
                 <a
+                    href={SITE.socials.telegram}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center rounded-lg bg-surface border border-border px-5 py-3 text-sm font-bold text-text transition-all hover:bg-accent hover:text-black hover:border-accent hover:scale-105"
+                >
+                    Join the Telegram group
+                </a>
+                <a
                     href={"https://www.instagram.com/jamaicabasketball"}
                     target="_blank"
                     rel="noopener noreferrer"
