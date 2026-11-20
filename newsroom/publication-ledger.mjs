@@ -1,10 +1,24 @@
 import { createHash } from "node:crypto";
+import { blotatoSubmissionFormat } from "./blotato.mjs";
 import { bearer, postJson, redis } from "./services.mjs";
 
 const namespace = "newsroom/publications";
 const receiptPrefix = "Jamaica Basketball publication receipt ";
 const digestFormat = /^[0-9a-f]{40}$/;
 const publicationIdFormat = /^\d+(?:_\d+)?$/;
+const pendingPrefix = "blotato-pending:";
+
+function publishedId(id) {
+  return publicationIdFormat.test(id) ||
+    (id.startsWith("blotato-published:") && blotatoSubmissionFormat.test(id.slice("blotato-published:".length)));
+}
+
+function receiptStatus(id) {
+  if (typeof id !== "string") return "needs-review";
+  if (publishedId(id)) return "already-published";
+  if (id.startsWith(pendingPrefix) && blotatoSubmissionFormat.test(id.slice(pendingPrefix.length))) return id;
+  return "needs-review";
+}
 
 async function github(path, { method = "GET", body } = {}) {
   const repo = process.env.GITHUB_REPOSITORY;
@@ -35,6 +49,8 @@ function githubLedger(key) {
     throw new Error("The GitHub publication ledger needs the checked-out commit and tree");
   }
 
+  let head = sha;
+
   async function existingReceipt() {
     const reference = await github(`ref/${ref}`);
     if (!reference.ok) throw new Error("Existing publication reservation could not be verified");
@@ -48,7 +64,8 @@ function githubLedger(key) {
     const prefix = `${receiptPrefix}${hash}\n\n`;
     const id = typeof message === "string" && message.startsWith(prefix)
       ? message.slice(prefix.length).trim() : "";
-    return publicationIdFormat.test(id) ? "already-published" : "needs-review";
+    head = node.object.sha;
+    return receiptStatus(id);
   }
 
   return {
@@ -60,13 +77,13 @@ function githubLedger(key) {
     },
 
     async record(publicationId) {
-      if (!publicationIdFormat.test(publicationId)) throw new Error("Unexpected Meta publication ID");
+      if (receiptStatus(publicationId) === "needs-review") throw new Error("Unexpected publication receipt ID");
       const created = await github("commits", {
         method: "POST",
         body: {
           message: `${receiptPrefix}${hash}\n\n${publicationId}`,
           tree,
-          parents: [sha],
+          parents: [head],
           author: { name: "github-actions[bot]", email: "41898282+github-actions[bot]@users.noreply.github.com" },
         },
       });
@@ -76,6 +93,7 @@ function githubLedger(key) {
 
       const updated = await github(`refs/${ref}`, { method: "PATCH", body: { sha: receipt.sha, force: false } });
       if (!updated.ok) throw new Error("The publication receipt could not be attached");
+      head = receipt.sha;
     },
   };
 }
@@ -87,7 +105,7 @@ export function publicationLedger(key) {
       if (await redis("SET", key, "sending", "NX") === "OK") return "reserved";
       const saved = await redis("GET", key);
       const previous = saved && saved !== "sending" ? JSON.parse(saved) : null;
-      return previous?.publicationId ? "already-published" : "needs-review";
+      return receiptStatus(previous?.publicationId || "");
     },
     async record(publicationId) {
       await redis("SET", key, JSON.stringify({ publicationId, at: new Date().toISOString() }));

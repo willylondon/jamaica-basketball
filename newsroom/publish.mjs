@@ -1,12 +1,13 @@
 import { readdir, readFile } from "node:fs/promises";
 import matter from "gray-matter";
+import { blotatoChannels, blotatoPostStatus, submitBlotatoPost, verifyBlotatoTarget } from "./blotato.mjs";
 import { graph, instagramHost } from "./services.mjs";
 import { publicationLedger } from "./publication-ledger.mjs";
 import { telegram, verifyTelegramTarget } from "./telegram.mjs";
 
 const site = "https://jamaicabasketball.online";
 const limits = { instagram: 2000, facebook: 4000 };
-const channelsSupported = [...Object.keys(limits), "telegram"];
+const channelsSupported = [...Object.keys(limits), "telegram", ...blotatoChannels];
 const placeholderPhoto = /(?:^|[._-])(?:logo|placeholder|og-default)(?:[._-]|$)/i;
 const slugFormat = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const idFormat = /^\d+$/;
@@ -100,7 +101,17 @@ async function instagramPhotoUrl(image) {
   return url.href;
 }
 
+async function tiktokPhotoUrl(image) {
+  const url = articlePhotoUrl(image);
+  if (!url) return null;
+  const headers = await photoHeaders(url);
+  if (!/^image\/(?:jpeg|webp)(?:;|$)/i.test(headers?.get("content-type") || "") ||
+      Number(headers.get("content-length")) > 20_000_000) return null;
+  return url.href;
+}
+
 async function target(channel) {
+  if (blotatoChannels.includes(channel)) return verifyBlotatoTarget(channel);
   if (channel === "telegram") return verifyTelegramTarget();
   if (channel === "instagram") {
     const { IG_ACCOUNT_ID: id, IG_ACCESS_TOKEN: token } = process.env;
@@ -164,6 +175,7 @@ export async function syndicate(posts, live, now = new Date()) {
   const results = [];
   const accounts = new Map();
   const telegramStart = process.env.TELEGRAM_START_DATE;
+  const blotatoStart = process.env.BLOTATO_START_DATE;
   for (const { slug, date, title, excerpt, image, instagramImage, captions } of posts) {
     if (date < cutoff || date > today) continue;
     const url = `${site}/posts/${slug}`;
@@ -181,7 +193,9 @@ export async function syndicate(posts, live, now = new Date()) {
       continue;
     }
     for (const channel of channels) {
-      if (channel === "telegram" && (!telegramStart || publicationDate(telegramStart) !== telegramStart || date < telegramStart)) continue;
+      const viaBlotato = blotatoChannels.includes(channel);
+      const start = viaBlotato ? blotatoStart : telegramStart;
+      if ((viaBlotato || channel === "telegram") && (!start || publicationDate(start) !== start || date < start)) continue;
       if (channel === "facebook" && !await facebookPreviewMatches(article, image).catch(() => false)) {
         results.push({ slug, channel, status: "waiting-for-facebook-preview" });
         continue;
@@ -194,6 +208,17 @@ export async function syndicate(posts, live, now = new Date()) {
           continue;
         }
       }
+      if (channel === "tiktok") {
+        photo = await tiktokPhotoUrl(instagramImage || image).catch(() => null);
+        if (!photo) {
+          results.push({ slug, channel, status: "waiting-for-tiktok-photo" });
+          continue;
+        }
+      }
+      if (channel === "twitter" && !await facebookPreviewMatches(article, image).catch(() => false)) {
+        results.push({ slug, channel, status: "waiting-for-x-preview" });
+        continue;
+      }
       const caption = channel === "telegram" ? [title || slug, excerpt].filter(Boolean).join("\n\n").slice(0, 3600) : captions[channel];
       let claimed = false;
       try {
@@ -201,6 +226,23 @@ export async function syndicate(posts, live, now = new Date()) {
         const account = accounts.get(channel);
         const ledger = publicationLedger(`jb:syndication:${channel}:${account.id}:${slug}`);
         const reservation = await ledger.reserve();
+        if (viaBlotato && (reservation === "reserved" || reservation.startsWith("blotato-pending:"))) {
+          claimed = true;
+          let submissionId = reservation.slice("blotato-pending:".length);
+          if (reservation === "reserved") {
+            submissionId = await submitBlotatoPost(channel, account, { title: title || slug, excerpt, url, photo });
+            await ledger.record(`blotato-pending:${submissionId}`);
+          }
+          const status = await blotatoPostStatus(account, submissionId);
+          if (status === "published") {
+            await ledger.record(`blotato-published:${submissionId}`);
+            results.push({ slug, channel, status: "published" });
+          } else {
+            const pending = status === "in-progress" || status === "scheduled";
+            results.push({ slug, channel, status: pending ? "submitted" : "needs-review", submissionId });
+          }
+          continue;
+        }
         if (reservation !== "reserved") {
           results.push({ slug, channel, status: reservation });
           continue;

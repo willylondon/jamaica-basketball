@@ -19,7 +19,7 @@ if (process.env.GITHUB_ACTIONS === "true" && process.env.UPSTASH_REDIS_REST_URL 
   console.log(`Private report stored at ${key}`);
 }
 for (const [name, { status, leads }] of Object.entries(discovery)) console.log(`${name}: ${status} (${leads.length} leads)`);
-for (const result of publication) console.log(result.slug, result.channel || "", result.status);
+for (const result of publication) console.log(result.slug, result.channel || "", result.status, result.submissionId || "");
 if (publication.length === 0 && !process.argv.includes("--discovery-only")) console.log("No recent approved stories are queued for syndication.");
 if (Object.values(discovery).some(({ status }) => ["failed", "partial"].includes(status)) ||
   publication.some(({ status }) => ["needs-review", "configuration-or-service-error", "site-check-error"].includes(status))) {

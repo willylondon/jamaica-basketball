@@ -236,6 +236,11 @@ test("Instagram uses the article photo crop and waits if the deployed file is no
 test("GitHub ledger claims atomically and retains confirmed or uncertain publication state", async (t) => {
   const original = "a".repeat(40);
   const receipt = "b".repeat(40);
+  const pendingReceipt = "d".repeat(40);
+  const publishedReceipt = "e".repeat(40);
+  const submission = "af1b2c3d-e5f6-7890-abcd-ef1234567890";
+  const pendingId = `blotato-pending:${submission}`;
+  const publishedId = `blotato-published:${submission}`;
   const environment = {
     NEWSROOM_PUBLICATION_LEDGER: "github", NEWSROOM_LEDGER_TOKEN: "ledger-fixture",
     GITHUB_REPOSITORY: "example/newsroom", GITHUB_REF: "refs/heads/main",
@@ -265,17 +270,22 @@ test("GitHub ledger claims atomically and retains confirmed or uncertain publica
     if (path === "commits" && options.method === "POST") {
       if (!allowReceipt) return Response.json({}, { status: 503 });
       const commit = JSON.parse(options.body);
-      assert.deepEqual(commit.parents, [original]);
+      const id = commit.message.split("\n\n")[1];
+      const sha = id === pendingId ? pendingReceipt : id === publishedId ? publishedReceipt : receipt;
+      assert.deepEqual(commit.parents, [id === publishedId ? pendingReceipt : original]);
       assert.equal(commit.tree, environment.NEWSROOM_LEDGER_TREE);
-      assert.match(commit.message, /^Jamaica Basketball publication receipt [a-f0-9]{64}\n\n2_30$/);
-      commits.set(receipt, commit);
-      return Response.json({ sha: receipt }, { status: 201 });
+      assert.match(commit.message, /^Jamaica Basketball publication receipt [a-f0-9]{64}\n\n/);
+      assert(["2_30", pendingId, publishedId].includes(id));
+      commits.set(sha, commit);
+      return Response.json({ sha }, { status: 201 });
     }
     if (path.startsWith("commits/") && options.method === "GET") return Response.json(commits.get(path.slice(8)));
     assert.equal(options.method, "PATCH");
     assert.match(path, /^refs\/newsroom\/publications\//);
-    assert.deepEqual(JSON.parse(options.body), { sha: receipt, force: false });
-    refs.set(path, receipt);
+    const { sha, force } = JSON.parse(options.body);
+    assert.equal(force, false);
+    assert.equal(commits.get(sha).parents[0], refs.get(path));
+    refs.set(path, sha);
     return Response.json({});
   });
   const first = publicationLedger("jb:syndication:facebook:2:approved");
@@ -283,6 +293,14 @@ test("GitHub ledger claims atomically and retains confirmed or uncertain publica
   assert.deepEqual((await Promise.all([first.reserve(), second.reserve()])).sort(), ["needs-review", "reserved"]);
   await first.record("2_30");
   assert.equal(await second.reserve(), "already-published");
+  const blotatoKey = "jb:syndication:tiktok:70380:approved";
+  const blotato = publicationLedger(blotatoKey);
+  assert.equal(await blotato.reserve(), "reserved");
+  await blotato.record(pendingId);
+  const nextRun = publicationLedger(blotatoKey);
+  assert.equal(await nextRun.reserve(), pendingId);
+  await nextRun.record(publishedId);
+  assert.equal(await publicationLedger(blotatoKey).reserve(), "already-published");
   const uncertain = publicationLedger("jb:syndication:facebook:2:another");
   assert.equal(await uncertain.reserve(), "reserved");
   allowReceipt = false;
@@ -440,4 +458,51 @@ test("Telegram tips and same-group reports reach only the group owner", async (t
   assert.match(outbound[3].text, /Group message report.*Repeated ads/s);
   assert.match(outbound[5].text, /Newsroom tip.*Friday fixture moved/s);
   assert.match(outbound[6].text, /sent privately/);
+});
+
+test("Blotato verifies both handles, preserves pending receipts, and never re-submits a post", async (t) => {
+  const receipt = "af1b2c3d-e5f6-7890-abcd-ef1234567890";
+  const accounts = { tiktok: ["70380", "jamaicabasketball"], twitter: ["29127", "JamaicaBasketb1"] };
+  const submissions = [];
+  let status = "in-progress";
+  mockedProviders(t, {
+    ...redisEnv, ...metaEnv, NEWSROOM_PUBLISH_CHANNELS: "tiktok,twitter",
+    BLOTATO_API_KEY: "fixture", BLOTATO_TIKTOK_ACCOUNT_ID: "70380",
+    BLOTATO_TWITTER_ACCOUNT_ID: "29127", BLOTATO_START_DATE: "2026-11-20",
+  }, (url, options) => {
+    if (url.origin === site) {
+      if (options.method === "HEAD") {
+        return new Response(null, { headers: { "content-type": "image/jpeg", "content-length": "15000" } });
+      }
+      return livePost(featuredPhoto);
+    }
+    assert.equal(url.hostname, "backend.blotato.com");
+    assert.equal(options.headers["blotato-api-key"], "fixture");
+    if (url.pathname === "/v2/users/me/accounts") {
+      const platform = url.searchParams.get("platform");
+      const [id, username] = accounts[platform];
+      return Response.json({ items: [{ id, platform, username }] });
+    }
+    if (url.pathname === "/v2/posts") {
+      const { post } = JSON.parse(options.body);
+      submissions.push(post);
+      return Response.json({ postSubmissionId: receipt });
+    }
+    assert.equal(url.pathname, `/v2/posts/${receipt}`);
+    return Response.json({ postSubmissionId: receipt, status });
+  });
+  assert.deepEqual(await verifyTargets(), [{ channel: "tiktok", id: "70380" }, { channel: "twitter", id: "29127" }]);
+  const now = new Date("2026-11-20T16:00:00Z");
+  const today = { ...approvedPost, date: "2026-11-20", title: "Jamaica basketball results", excerpt: "A verified game recap." };
+  assert.deepEqual(await syndicate([approvedPost], true, now), []);
+  const queued = await syndicate([today], true, now);
+  assert.deepEqual(queued.map((item) => item.status), ["submitted", "submitted"]);
+  assert.equal(submissions[0].target.privacyLevel, "PUBLIC_TO_EVERYONE");
+  assert.deepEqual(submissions[0].content.mediaUrls, [site + featuredPhoto]);
+  assert.equal(submissions[1].accountId, "29127");
+  assert.match(submissions[1].content.text, /jamaicabasketball\.online\/posts\/approved$/);
+  status = "published";
+  assert.deepEqual((await syndicate([today], true, now)).map((item) => item.status), ["published", "published"]);
+  assert.deepEqual((await syndicate([today], true, now)).map((item) => item.status), ["already-published", "already-published"]);
+  assert.equal(submissions.length, 2);
 });

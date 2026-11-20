@@ -30,13 +30,13 @@ Use the repository's `newsroom` environment and restrict it to `main`. Enter cre
 | `META_GRAPH_VERSION` | Variable | Supported Graph API version shown in the Meta app dashboard, in the form `v27.0` |
 | `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` | Optional secrets | Private discovery reports |
 | `NEWSROOM_PUBLISH_LIVE` | Variable | Set to `true` after reviewing the workflow and verifying each selected account |
-| `NEWSROOM_PUBLISH_CHANNELS` | Optional variable | Select `facebook`, `instagram`, or both, comma-separated. The workflow defaults to Facebook. |
+| `NEWSROOM_PUBLISH_CHANNELS` | Optional variable | Select `facebook`, `instagram`, `telegram`, `tiktok`, and/or `twitter`, comma-separated. The workflow defaults to Facebook. |
 
 For the Jamaica Basketball Newsroom app, Unified Login uses `instagram_basic`, `instagram_content_publish` and `instagram_manage_messages`. Facebook posting requires `pages_manage_posts`, `pages_read_engagement` and `pages_show_list`. Scope the asset grant to the Jamaica Basketball Promo Page and @jamaicabasketball. The Page can be tested independently with a Page token while Instagram authorization is pending. The default discovery path can try Instagram hashtag search with the same authorized account, subject to Meta's discovery permissions. A dedicated discovery token, when configured, must have its matching account ID. Start with **Verify the configured social account IDs without publishing** and compare the IDs with Meta Business Suite. Use **Verify the Instagram account and token without publishing** to check Instagram before enabling it as a live channel. Verify and renew expiring tokens in the Meta dashboard.
 
 The public repository's Actions logs contain discovery counts and syndication outcomes. Use the private Upstash console to read `jb:reports:<run-id>:<attempt>` when configured.
 
-The publishing job uses durable GitHub refs under `refs/newsroom/publications/`. GitHub accepts a single claim for each hash of `jb:syndication:<channel>:<account-id>:<slug>`. The job creates that claim before contacting Meta and advances the ref without force to a receipt commit after Meta confirms the post ID. The Git data contains the hash, the source commit and the ID of the public post. Credentials, captions and inbox data are excluded. Only the gated publishing job gets repository write permission.
+The publishing job uses durable GitHub refs under `refs/newsroom/publications/`. GitHub accepts a single claim for each hash of `jb:syndication:<channel>:<account-id>:<slug>`. The job creates that claim before contacting the publishing provider and advances the ref without force as it records a submission or confirmed publication. The Git data contains the hash, the source commit and the provider’s receipt ID. Credentials, captions and inbox data are excluded. Only the gated publishing job gets repository write permission.
 
 If a claim has no receipt, look up the actual post on the Page or profile. Keep the claim while the outcome is uncertain. An operator can reconcile it with a confirmed post ID or release the reservation after confirming there was no post and no run is still processing the claim. Keep the same ledger across runs so retries retain their claims.
 
@@ -84,3 +84,11 @@ Use the Jamaica Basketball bot in the selected group. Make the bot an administra
 - In private chat with the bot, group members can use `/report <group message link> <reason>` or `/tip <details>`. The group owner must start the bot in private chat to receive submissions. The bot verifies membership, delivers submissions to the owner via Telegram and acknowledges confirmed delivery. Tips and reports do not appear in the group.
 
 [Telegram Bot API](https://core.telegram.org/bots/api#setwebhook) · [Telegram group message delivery](https://core.telegram.org/bots/faq#what-messages-will-my-bot-get)
+
+## Blotato syndication
+
+Set the `BLOTATO_API_KEY` secret and the `BLOTATO_TIKTOK_ACCOUNT_ID`, `BLOTATO_TWITTER_ACCOUNT_ID` and `BLOTATO_START_DATE` variables in GitHub’s `newsroom` environment. The start date is the first eligible publication date in Jamaica. Dispatch the newsroom workflow with `check_blotato` to verify the destination IDs and handles without posting before adding the channels to `NEWSROOM_PUBLISH_CHANNELS`.
+
+Only approved articles that are live on the website qualify. TikTok uses the article’s cleared JPEG or WebP photo, with the social crop preferred when available. X links to the article after its sharing image passes the same check used for Facebook. A Blotato submission ID is saved before checking the post’s status, so a later run checks it again without submitting another copy. Review failed submissions in Blotato before authorizing a retry.
+
+[Blotato publishing status](https://help.blotato.com/rest-api-reference/publish-post/get-post)

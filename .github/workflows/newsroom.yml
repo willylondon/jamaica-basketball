@@ -14,6 +14,10 @@ on:
         description: Verify the Instagram account and token without publishing
         type: boolean
         default: false
+      check_blotato:
+        description: Verify the TikTok and X accounts through Blotato without publishing
+        type: boolean
+        default: false
       check_telegram:
         description: Verify the Telegram bot, group, and deletion permission without sending
         type: boolean
@@ -55,7 +59,9 @@ jobs:
       - name: Run daily workflow
         id: run
         run: |
-          if [[ "$CHECK_TELEGRAM" == "true" ]]; then
+          if [[ "$CHECK_BLOTATO" == "true" ]]; then
+            NEWSROOM_PUBLISH_CHANNELS=tiktok,twitter node newsroom/daily.mjs --check-targets
+          elif [[ "$CHECK_TELEGRAM" == "true" ]]; then
             NEWSROOM_PUBLISH_CHANNELS=telegram node newsroom/daily.mjs --check-targets
           elif [[ "$CHECK_INSTAGRAM" == "true" ]]; then
             NEWSROOM_PUBLISH_CHANNELS=instagram node newsroom/daily.mjs --check-targets
@@ -72,7 +78,9 @@ jobs:
             node newsroom/daily.mjs
           fi
         env:
+          BLOTATO_API_KEY: ${{ (inputs.check_targets || inputs.check_blotato) && secrets.BLOTATO_API_KEY || '' }}
           CHECK_TARGETS: ${{ inputs.check_targets }}
+          CHECK_BLOTATO: ${{ inputs.check_blotato }}
           CHECK_TELEGRAM: ${{ inputs.check_telegram }}
           CHECK_INSTAGRAM: ${{ inputs.check_instagram }}
           SYNDICATE_ONLY: ${{ inputs.syndicate_only }}
@@ -91,6 +99,9 @@ jobs:
           IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
           FB_PAGE_ACCESS_TOKEN: ${{ inputs.check_targets && secrets.FB_PAGE_ACCESS_TOKEN || '' }}
           TELEGRAM_BOT_TOKEN: ${{ (inputs.check_telegram || inputs.check_targets) && secrets.TELEGRAM_BOT_TOKEN || '' }}
+          BLOTATO_TIKTOK_ACCOUNT_ID: ${{ vars.BLOTATO_TIKTOK_ACCOUNT_ID }}
+          BLOTATO_TWITTER_ACCOUNT_ID: ${{ vars.BLOTATO_TWITTER_ACCOUNT_ID }}
+          BLOTATO_START_DATE: ${{ vars.BLOTATO_START_DATE }}
           TELEGRAM_GROUP_ID: ${{ vars.TELEGRAM_GROUP_ID }}
           UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
           UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
@@ -119,7 +130,11 @@ jobs:
         env:
           NEWSROOM_PUBLICATION_LEDGER: github
           NEWSROOM_LEDGER_TOKEN: ${{ github.token }}
+          BLOTATO_API_KEY: ${{ secrets.BLOTATO_API_KEY }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          BLOTATO_TIKTOK_ACCOUNT_ID: ${{ vars.BLOTATO_TIKTOK_ACCOUNT_ID }}
+          BLOTATO_TWITTER_ACCOUNT_ID: ${{ vars.BLOTATO_TWITTER_ACCOUNT_ID }}
+          BLOTATO_START_DATE: ${{ vars.BLOTATO_START_DATE }}
           TELEGRAM_GROUP_ID: ${{ vars.TELEGRAM_GROUP_ID }}
           TELEGRAM_START_DATE: ${{ vars.TELEGRAM_START_DATE }}
           NEWSROOM_PUBLISH_LIVE: ${{ vars.NEWSROOM_PUBLISH_LIVE }}
