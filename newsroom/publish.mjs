@@ -230,15 +230,23 @@ export async function syndicate(posts, live, now = new Date()) {
           claimed = true;
           let submissionId = reservation.slice("blotato-pending:".length);
           if (reservation === "reserved") {
-            submissionId = await submitBlotatoPost(channel, account, { title: title || slug, excerpt, url, photo });
+            submissionId = await submitBlotatoPost(channel, account, {
+              title: title || slug, excerpt, url, photo, photoCaption: captions.instagram,
+            });
             await ledger.record(`blotato-pending:${submissionId}`);
           }
-          const status = await blotatoPostStatus(account, submissionId);
-          if (status === "published") {
+          let result = await blotatoPostStatus(account, submissionId);
+          if (process.env.BLOTATO_REPLAY_SLUGS && result.status === "in-progress") {
+            for (let attempt = 0; attempt < 3 && result.status === "in-progress"; attempt++) {
+              await new Promise((resolve) => setTimeout(resolve, 10000));
+              result = await blotatoPostStatus(account, submissionId);
+            }
+          }
+          if (result.status === "published") {
             await ledger.record(`blotato-published:${submissionId}`);
-            results.push({ slug, channel, status: "published" });
+            results.push({ slug, channel, status: "published", publicUrl: result.publicUrl });
           } else {
-            const pending = status === "in-progress" || status === "scheduled";
+            const pending = result.status === "in-progress" || result.status === "scheduled";
             results.push({ slug, channel, status: pending ? "submitted" : "needs-review", submissionId });
           }
           continue;
