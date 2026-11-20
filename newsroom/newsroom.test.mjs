@@ -7,6 +7,7 @@ import { test } from "node:test";
 import { handleInstagramEvent, instagramEvents, replyText, signatureMatches } from "./inbox.mjs";
 import { approvedPosts, syndicate, verifyTargets } from "./publish.mjs";
 import { publicationLedger } from "./publication-ledger.mjs";
+import { handleTelegramCommunityUpdate } from "./telegram-community.mjs";
 import { matchesTelegramSecret, moderateTelegramUpdate } from "./telegram-moderation.mjs";
 
 function mockedProviders(t, overrides, fetchHandler) {
@@ -391,4 +392,52 @@ test("Telegram verifies its destination, skips old stories, and records each sen
   assert.deepEqual(await syndicate(posts, true, now), [{ slug: "approved", channel: "telegram", status: "published" }]);
   assert.deepEqual(await syndicate(posts, true, now), [{ slug: "approved", channel: "telegram", status: "already-published" }]);
   assert.equal(sent, 1);
+});
+
+test("Telegram tips and same-group reports reach only the group owner", async (t) => {
+  const config = { id: "-100700", token: "123456:telegram_fixture_only_not_a_real_token" };
+  const outbound = [];
+  let membership = "member";
+  t.mock.method(globalThis, "fetch", async (request, options) => {
+    const url = new URL(request);
+    assert.equal(url.hostname, "api.telegram.org");
+    const args = JSON.parse(options.body);
+    switch (url.pathname.split("/").at(-1)) {
+      case "getChatMember":
+        assert.deepEqual(args, { chat_id: config.id, user_id: 41 });
+        return Response.json({ ok: true, result: { status: membership } });
+      case "getChatAdministrators":
+        assert.equal(args.chat_id, config.id);
+        return Response.json({ ok: true, result: [
+          { status: "administrator", user: { id: 92 } },
+          { status: "creator", user: { id: 94, is_bot: false } },
+        ] });
+      case "sendMessage":
+        outbound.push(args);
+        return Response.json({ ok: true, result: { message_id: 1 } });
+      default:
+        assert.fail("Unexpected Telegram method");
+    }
+  });
+  const update = (text, type = "private") => ({ message: {
+    message_id: 3, text, from: { id: 41 }, chat: { id: type === "private" ? 41 : -100700, type },
+  } });
+  await handleTelegramCommunityUpdate(update("/start report"), config);
+  assert.match(outbound.at(-1).text, /copy the message link/i);
+  await handleTelegramCommunityUpdate(update("/tip Friday fixture moved", "supergroup"), config);
+  await handleTelegramCommunityUpdate(update("/report https://t.me/c/711/13 Wrong group"), config);
+  assert.deepEqual(outbound.map((item) => item.chat_id), [41, 41]);
+
+  membership = "left";
+  await handleTelegramCommunityUpdate(update("/tip Friday fixture moved"), config);
+  assert.match(outbound.at(-1).text, /join the Jamaica Basketball/i);
+  assert.equal(outbound.length, 3);
+
+  membership = "member";
+  await handleTelegramCommunityUpdate(update("/report https://t.me/c/700/13?single Repeated ads"), config);
+  await handleTelegramCommunityUpdate(update("/tip Friday fixture moved"), config);
+  assert.deepEqual(outbound.slice(3).map((item) => item.chat_id), [94, 41, 94, 41]);
+  assert.match(outbound[3].text, /Group message report.*Repeated ads/s);
+  assert.match(outbound[5].text, /Newsroom tip.*Friday fixture moved/s);
+  assert.match(outbound[6].text, /sent privately/);
 });
