@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { CATEGORIES } from "@/lib/content";
+import { SITE } from "@/lib/utils";
 
 const NAV_LINKS = [
     { href: "/news", label: "News" },
@@ -57,7 +58,7 @@ export default function Header() {
                         <Link
                             key={link.href}
                             href={link.href}
-                            className="rounded-md px-3 py-2 text-sm font-medium text-text-muted transition-colors hover:bg-surface hover:text-text"
+                            className="rounded-md px-2 py-2 text-sm font-medium text-text-muted transition-colors hover:bg-surface hover:text-text xl:px-3"
                         >
                             {link.label}
                         </Link>
@@ -74,7 +75,7 @@ export default function Header() {
                                 value={query}
                                 onChange={(e) => setQuery(e.target.value)}
                                 placeholder="Search stories…"
-                                className="w-52 rounded-lg border border-border bg-surface px-3 py-1.5 text-sm text-text placeholder:text-text-dim focus:border-accent/50 focus:outline-none transition-colors"
+                                className="w-32 rounded-lg border border-border bg-surface px-3 py-1.5 text-sm text-text placeholder:text-text-dim focus:border-accent/50 focus:outline-none transition-colors xl:w-52"
                             />
                             <button
                                 type="button"
@@ -102,23 +103,33 @@ export default function Header() {
                     )}
                 </div>
 
-                {/* Mobile hamburger */}
-                <button
-                    onClick={() => setMobileOpen(!mobileOpen)}
-                    className="flex h-10 w-10 items-center justify-center rounded-lg text-text-muted transition-colors hover:bg-surface lg:hidden"
-                    aria-label="Toggle menu"
-                    aria-expanded={mobileOpen}
-                >
-                    {mobileOpen ? (
-                        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    ) : (
-                        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path d="M4 6h16M4 12h16M4 18h16" />
-                        </svg>
-                    )}
-                </button>
+                <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+                    <a
+                        href={SITE.socials.telegram}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="rounded-lg bg-accent px-3 py-2 text-sm font-bold text-black transition-colors hover:bg-accent-hover"
+                    >
+                        <span className="hidden sm:inline">Join </span>Telegram
+                    </a>
+                    {/* Mobile hamburger */}
+                    <button
+                        onClick={() => setMobileOpen(!mobileOpen)}
+                        className="flex h-10 w-10 items-center justify-center rounded-lg text-text-muted transition-colors hover:bg-surface lg:hidden"
+                        aria-label="Toggle menu"
+                        aria-expanded={mobileOpen}
+                    >
+                        {mobileOpen ? (
+                            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        ) : (
+                            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path d="M4 6h16M4 12h16M4 18h16" />
+                            </svg>
+                        )}
+                    </button>
+                </div>
             </div>
 
             {/* Mobile menu */}
