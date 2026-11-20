@@ -28,11 +28,11 @@ function truncate(text, limit) {
   return characters.slice(0, limit - 1).join("").trimEnd() + "…";
 }
 
-export async function submitBlotatoPost(channel, account, { title, excerpt, url, photo }) {
+export async function submitBlotatoPost(channel, account, { title, excerpt, url, photo, photoCaption }) {
   const tiktok = channel === "tiktok";
   const intro = [title, excerpt].filter(Boolean).join("\n\n");
   // Reserve space for X's weighted URL and allow for two units per code point.
-  const text = tiktok ? `${truncate(intro, 1800)}\n\nFull story at jamaicabasketball.online.` : `${truncate(intro, 125)}\n\n${url}`;
+  const text = tiktok ? `${(photoCaption || truncate(intro, 1800)).trim()}\n\nFull story at jamaicabasketball.online.` : `${truncate(intro, 125)}\n\n${url}`;
   const target = tiktok ? {
     targetType: channel,
     privacyLevel: "PUBLIC_TO_EVERYONE",
@@ -45,11 +45,18 @@ export async function submitBlotatoPost(channel, account, { title, excerpt, url,
     autoAddMusic: false,
     title: truncate(title, 90),
   } : { targetType: channel };
-  const response = await blotato("posts", account.token, { post: {
-    accountId: account.id,
-    content: { platform: channel, text, mediaUrls: photo ? [photo] : [] },
-    target,
-  } });
+  return submit(account, { platform: channel, text, mediaUrls: photo ? [photo] : [] }, target);
+}
+
+export function scheduleBlotatoXPost(account, text, scheduledTime) {
+  return submit(account, { platform: "twitter", text, mediaUrls: [] }, { targetType: "twitter" }, scheduledTime);
+}
+
+async function submit(account, content, target, scheduledTime) {
+  const response = await blotato("posts", account.token, {
+    post: { accountId: account.id, content, target },
+    ...(scheduledTime && { scheduledTime }),
+  });
   if (!blotatoSubmissionFormat.test(response.postSubmissionId || "")) {
     throw new Error("Blotato did not confirm a submission ID");
   }
@@ -59,5 +66,5 @@ export async function submitBlotatoPost(channel, account, { title, excerpt, url,
 export async function blotatoPostStatus(account, id) {
   const result = await blotato(`posts/${id}`, account.token);
   if (result.postSubmissionId !== id) throw new Error("Unexpected Blotato status response");
-  return result.status;
+  return result;
 }

@@ -22,6 +22,9 @@ on:
         description: Verify the Telegram bot, group, and deletion permission without sending
         type: boolean
         default: false
+      blotato_replay_slugs:
+        description: Replay the listed approved article slugs to TikTok and X only
+        type: string
       syndicate_only:
         description: Check approved stories for syndication without repeating discovery
         type: boolean
@@ -69,7 +72,7 @@ jobs:
             node newsroom/daily.mjs --check-targets
           elif [[ "$LIVE_SWITCH" == "true" && "$MANUAL_DRY_RUN" != "true" ]]; then
             echo "publish=true" >> "$GITHUB_OUTPUT"
-            if [[ "$SYNDICATE_ONLY" != "true" ]]; then
+            if [[ "$SYNDICATE_ONLY" != "true" && -z "$BLOTATO_REPLAY_SLUGS" ]]; then
               node newsroom/daily.mjs --discovery-only
             fi
           elif [[ "$SYNDICATE_ONLY" == "true" ]]; then
@@ -85,6 +88,7 @@ jobs:
           CHECK_INSTAGRAM: ${{ inputs.check_instagram }}
           SYNDICATE_ONLY: ${{ inputs.syndicate_only }}
           MANUAL_DRY_RUN: ${{ inputs.dry_run }}
+          BLOTATO_REPLAY_SLUGS: ${{ inputs.blotato_replay_slugs }}
           LIVE_SWITCH: ${{ vars.NEWSROOM_PUBLISH_LIVE }}
           NEWSROOM_PUBLISH_CHANNELS: ${{ vars.NEWSROOM_PUBLISH_CHANNELS || 'facebook' }}
           META_GRAPH_VERSION: ${{ vars.META_GRAPH_VERSION }}
@@ -128,6 +132,7 @@ jobs:
           export NEWSROOM_LEDGER_TREE="$(git rev-parse HEAD^{tree})"
           node newsroom/daily.mjs --live --syndicate-only
         env:
+          BLOTATO_REPLAY_SLUGS: ${{ inputs.blotato_replay_slugs }}
           NEWSROOM_PUBLICATION_LEDGER: github
           NEWSROOM_LEDGER_TOKEN: ${{ github.token }}
           BLOTATO_API_KEY: ${{ secrets.BLOTATO_API_KEY }}

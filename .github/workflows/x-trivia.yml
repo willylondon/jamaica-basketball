@@ -1,0 +1,56 @@
+name: Jamaica Hoops Trivia on X
+run-name: Jamaica Hoops Trivia • ${{ inputs.date }} • ${{ inputs.question }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      date:
+        description: Today's Jamaica date in YYYY-MM-DD
+        type: string
+        required: true
+      question:
+        description: Lunchtime trivia question copy
+        type: string
+        required: true
+      answer:
+        description: Evening answer and context
+        type: string
+        required: true
+      source:
+        description: Primary HTTPS source URL for the answer
+        type: string
+        required: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: jamaica-basketball-x-trivia
+  cancel-in-progress: false
+
+jobs:
+  schedule:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    environment: newsroom
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: 24
+      - name: Schedule and verify both X posts
+        run: |
+          export NEWSROOM_LEDGER_TREE="$(git rev-parse HEAD^{tree})"
+          node newsroom/x-trivia.mjs
+        env:
+          TRIVIA_DATE: ${{ inputs.date }}
+          TRIVIA_QUESTION: ${{ inputs.question }}
+          TRIVIA_ANSWER: ${{ inputs.answer }}
+          TRIVIA_SOURCE: ${{ inputs.source }}
+          BLOTATO_API_KEY: ${{ secrets.BLOTATO_API_KEY }}
+          BLOTATO_TWITTER_ACCOUNT_ID: ${{ vars.BLOTATO_TWITTER_ACCOUNT_ID }}
+          NEWSROOM_PUBLICATION_LEDGER: github
+          NEWSROOM_LEDGER_TOKEN: ${{ github.token }}
