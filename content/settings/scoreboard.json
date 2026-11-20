@@ -3,36 +3,74 @@
     {
       "label": "AmeriCup Pre-Qualifiers · Managua",
       "items": [
-        { "meta": "Fri 27 Nov · 5:30 PM", "text": "JAM v CRC", "href": "/posts/jamaica-basketball-americup-pre-qualifiers-managua" },
-        { "meta": "Sat 28 Nov · 5:30 PM", "text": "GUY v JAM", "href": "/posts/jamaica-basketball-americup-pre-qualifiers-managua" },
-        { "meta": "Sun 29 Nov · 8:00 PM", "text": "NCA v JAM", "href": "/posts/jamaica-basketball-americup-pre-qualifiers-managua" }
+        {
+          "meta": "Fri 27 Nov · 5:30 PM",
+          "text": "JAM v CRC",
+          "href": "/posts/jamaica-americup-pre-qualifiers-preview"
+        },
+        {
+          "meta": "Sat 28 Nov · 5:30 PM",
+          "text": "GUY v JAM",
+          "href": "/posts/jamaica-americup-pre-qualifiers-preview"
+        },
+        {
+          "meta": "Sun 29 Nov · 8:00 PM",
+          "text": "NCA v JAM",
+          "href": "/posts/jamaica-americup-pre-qualifiers-preview"
+        }
       ]
     },
     {
       "label": "ISSA U19",
       "items": [
-        { "meta": "Final · Urban", "text": "Ardenne 92 · STATHS 32", "href": "/category/high-school" },
-        { "meta": "Final · Rural", "text": "Manchester 94 · Denbigh 22", "href": "/category/high-school" }
+        {
+          "meta": "Final · Urban",
+          "text": "Ardenne 92 · STATHS 32",
+          "href": "/category/high-school"
+        },
+        {
+          "meta": "Final · Rural",
+          "text": "Manchester 94 · Denbigh 22",
+          "href": "/category/high-school"
+        }
       ]
     }
   ],
   "nextGame": {
     "competition": "AmeriCup Pre-Qualifiers",
-    "home": { "code": "JAM", "name": "Jamaica" },
-    "away": { "code": "CRC", "name": "Costa Rica" },
+    "home": {
+      "code": "JAM",
+      "name": "Jamaica"
+    },
+    "away": {
+      "code": "CRC",
+      "name": "Costa Rica"
+    },
     "when": "Friday, Nov 27 · 5:30 PM",
     "where": "Jamaica time · Polideportivo Alexis Argüello, Managua",
     "note": "Last meeting: Jamaica won 80–76 in overtime, August 2025.",
-    "href": "/posts/jamaica-basketball-americup-pre-qualifiers-managua",
-    "cta": "See the schedule"
+    "href": "/posts/jamaica-americup-pre-qualifiers-preview",
+    "cta": "Read the preview"
   },
   "fixtures": {
     "title": "AmeriCup 2029 Pre-Qualifiers · Group A · Managua",
     "note": "Top two advance to the 2029 Qualifiers, starting November 2027.",
     "rows": [
-      { "date": "Fri 27 Nov", "game": "Jamaica v Costa Rica", "time": "5:30 PM" },
-      { "date": "Sat 28 Nov", "game": "Guyana v Jamaica", "time": "5:30 PM" },
-      { "date": "Sun 29 Nov", "game": "Nicaragua v Jamaica", "time": "8:00 PM" }
+      {
+        "date": "Fri 27 Nov",
+        "game": "Jamaica v Costa Rica",
+        "time": "5:30 PM"
+      },
+      {
+        "date": "Sat 28 Nov",
+        "game": "Guyana v Jamaica",
+        "time": "5:30 PM"
+      },
+      {
+        "date": "Sun 29 Nov",
+        "game": "Nicaragua v Jamaica",
+        "time": "8:00 PM"
+      }
     ]
   },
   "standings": {
@@ -40,30 +78,112 @@
     "note": "Three-way tie at 2–4 decided on points difference.",
     "highlight": "Jamaica",
     "rows": [
-      { "team": "Canada", "record": "6–0", "diff": "+133" },
-      { "team": "Bahamas", "record": "2–4", "diff": "−18" },
-      { "team": "Puerto Rico", "record": "2–4", "diff": "−16" },
-      { "team": "Jamaica", "record": "2–4", "diff": "−99" }
+      {
+        "team": "Canada",
+        "record": "6–0",
+        "diff": "+133"
+      },
+      {
+        "team": "Bahamas",
+        "record": "2–4",
+        "diff": "−18"
+      },
+      {
+        "team": "Puerto Rico",
+        "record": "2–4",
+        "diff": "−16"
+      },
+      {
+        "team": "Jamaica",
+        "record": "2–4",
+        "diff": "−99"
+      }
     ]
   },
   "schools": {
     "title": "ISSA Schoolboys · Opening day results · October 2026",
     "note": "Defending Urban U19 champions: Campion College. Source: The Gleaner.",
     "results": [
-      { "zone": "Urban", "group": "U19", "winner": "Ardenne", "opponent": "STATHS", "score": "92–32" },
-      { "zone": "Urban", "group": "U16", "winner": "STATHS", "opponent": "Ardenne", "score": "73–26" },
-      { "zone": "Urban", "group": "U19", "winner": "St George's", "opponent": "St Catherine", "score": "88–10" },
-      { "zone": "Urban", "group": "U19", "winner": "Wolmer's", "opponent": "Tivoli", "score": "72–50" },
-      { "zone": "Urban", "group": "U19", "winner": "Camperdown", "opponent": "Cedar Grove", "score": "66–21" },
-      { "zone": "Urban", "group": "U16", "winner": "Wolmer's", "opponent": "Meadowbrook", "score": "46–26" },
-      { "zone": "Rural", "group": "U19", "winner": "Manchester", "opponent": "Denbigh", "score": "94–22" },
-      { "zone": "Rural", "group": "U16", "winner": "Herbert Morrison", "opponent": "Dinthill Technical", "score": "79–6" },
-      { "zone": "Rural", "group": "—", "winner": "Muschett", "opponent": "Holland", "score": "52–34" }
+      {
+        "zone": "Urban",
+        "group": "U19",
+        "winner": "Ardenne",
+        "opponent": "STATHS",
+        "score": "92–32"
+      },
+      {
+        "zone": "Urban",
+        "group": "U16",
+        "winner": "STATHS",
+        "opponent": "Ardenne",
+        "score": "73–26"
+      },
+      {
+        "zone": "Urban",
+        "group": "U19",
+        "winner": "St George's",
+        "opponent": "St Catherine",
+        "score": "88–10"
+      },
+      {
+        "zone": "Urban",
+        "group": "U19",
+        "winner": "Wolmer's",
+        "opponent": "Tivoli",
+        "score": "72–50"
+      },
+      {
+        "zone": "Urban",
+        "group": "U19",
+        "winner": "Camperdown",
+        "opponent": "Cedar Grove",
+        "score": "66–21"
+      },
+      {
+        "zone": "Urban",
+        "group": "U16",
+        "winner": "Wolmer's",
+        "opponent": "Meadowbrook",
+        "score": "46–26"
+      },
+      {
+        "zone": "Rural",
+        "group": "U19",
+        "winner": "Manchester",
+        "opponent": "Denbigh",
+        "score": "94–22"
+      },
+      {
+        "zone": "Rural",
+        "group": "U16",
+        "winner": "Herbert Morrison",
+        "opponent": "Dinthill Technical",
+        "score": "79–6"
+      },
+      {
+        "zone": "Rural",
+        "group": "—",
+        "winner": "Muschett",
+        "opponent": "Holland",
+        "score": "52–34"
+      }
     ],
     "standouts": [
-      { "stat": "25", "name": "Mowan Bonnick", "detail": "Rebounds, plus 18 points · Ardenne U19" },
-      { "stat": "32", "name": "Ibrahim Baxter", "detail": "Points · Ardenne U19" },
-      { "stat": "27", "name": "Ajonie Mattis", "detail": "Points, plus 10 rebounds · STATHS U16" }
+      {
+        "stat": "25",
+        "name": "Mowan Bonnick",
+        "detail": "Rebounds, plus 18 points · Ardenne U19"
+      },
+      {
+        "stat": "32",
+        "name": "Ibrahim Baxter",
+        "detail": "Points · Ardenne U19"
+      },
+      {
+        "stat": "27",
+        "name": "Ajonie Mattis",
+        "detail": "Points, plus 10 rebounds · STATHS U16"
+      }
     ]
   }
 }
