@@ -16,6 +16,8 @@ declare module "@/.velite" {
         image: string;
         imageAlt: string;
         imagePosition?: string;
+        coverStat?: string;
+        coverLabel?: string;
         draft: boolean;
         syndicate: boolean;
         featured: boolean;

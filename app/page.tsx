@@ -2,330 +2,163 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import PostCardFeatured from "@/components/ui/PostCardFeatured";
 import PostCard from "@/components/ui/PostCard";
-import SocialCta from "@/components/ui/SocialCta";
-import SponsorPlaceholder from "@/components/ui/SponsorPlaceholder";
-import { getPublishedPosts, getFeaturedPosts, getPostsByCategory, getTrendingPosts, getAuthorName, CATEGORIES } from "@/lib/content";
-import { LEAGUE_HUBS, getPostsForLeagueHub } from "@/lib/leagues";
+import NextGameCard from "@/components/home/NextGameCard";
+import FixturesAndTables from "@/components/home/FixturesAndTables";
+import SchoolsBoard from "@/components/home/SchoolsBoard";
+import BriefingBand from "@/components/home/BriefingBand";
+import { getPublishedPosts, getPostsByCategory, getAuthorName } from "@/lib/content";
+import { LEAGUE_HUBS } from "@/lib/leagues";
+import { scoreboard } from "@/lib/scoreboard";
 import { SITE } from "@/lib/utils";
 
 export const metadata: Metadata = {
-title: "News, Scores and Features in Jamaica",
-description:
-"Jamaica Basketball covers national team news, school basketball, 3x3, club competition, player features, and basketball culture across Jamaica.",
-alternates: {
-canonical: SITE.url,
-},
+    title: "News, Scores and Features in Jamaica",
+    description:
+        "Jamaica Basketball covers national team news, school basketball, 3x3, club competition, player features, and basketball culture across Jamaica.",
+    alternates: {
+        canonical: SITE.url,
+    },
 };
 
+function MoreLink({ href, children }: { href: string; children: React.ReactNode }) {
+    return (
+        <Link href={href} className="text-sm font-semibold text-accent hover:text-accent-hover">
+            {children}
+        </Link>
+    );
+}
+
 export default function HomePage() {
-const allPosts = getPublishedPosts();
-const featuredPosts = getFeaturedPosts();
-const heroPost = allPosts[0];
-const latestPosts = allPosts.filter((p) => p.slug !== heroPost?.slug).slice(0, 6);
-const coverageHubs = CATEGORIES.filter((category) =>
-["news", "national-team", "high-school", "club-basketball", "3x3", "player-spotlight"].includes(category.slug)
-);
-const leagueHubs = LEAGUE_HUBS.slice(0, 6);
+    const allPosts = getPublishedPosts();
+    const heroPost = allPosts[0];
+    const topStories = allPosts.slice(1, 5);
+    const shown = new Set([heroPost?.slug, ...topStories.map((p) => p.slug)]);
+    const latestPosts = allPosts.filter((p) => !shown.has(p.slug)).slice(0, 8);
+    const opinionPosts = getPostsByCategory("opinion").slice(0, 3);
+    const featurePosts = getPostsByCategory("features").slice(0, 3);
 
-// Opinion + Features combined module
-const opinionPosts = getPostsByCategory("opinion").slice(0, 3);
-const featurePosts = getPostsByCategory("features").slice(0, 3);
+    return (
+        <>
+            <div className="mx-auto max-w-7xl px-4 pt-8 lg:px-8">
+                {/* Lead story, next game and top stories */}
+                <div className="grid gap-10 lg:grid-cols-[minmax(0,2fr)_minmax(300px,1fr)]">
+                    {heroPost && <PostCardFeatured post={heroPost} />}
+                    <aside className="flex min-w-0 flex-col gap-8">
+                        {scoreboard.nextGame && <NextGameCard game={scoreboard.nextGame} />}
+                        {topStories.length > 0 && (
+                            <section aria-labelledby="top-stories-h">
+                                <h2 id="top-stories-h" className="kicker text-text-dim">Top stories</h2>
+                                <ol className="mt-1.5">
+                                    {topStories.map((post, i) => (
+                                        <li key={post.slug} className="flex gap-4 border-b border-border py-3.5 last:border-b-0">
+                                            <span aria-hidden="true" className="w-6 shrink-0 font-display text-[1.75rem] font-extrabold leading-none text-accent">
+                                                {i + 1}
+                                            </span>
+                                            <Link href={`/posts/${post.slug}`} className="text-base font-semibold leading-snug text-text hover:text-accent">
+                                                {post.title}
+                                            </Link>
+                                        </li>
+                                    ))}
+                                </ol>
+                            </section>
+                        )}
+                    </aside>
+                </div>
 
-// Trending / recommended
-// Filter out latest posts to reduce duplication on homepage
-const latestSlugSet = new Set(latestPosts.map(p => p.slug));
-const trendingPosts = getTrendingPosts(8)
-.filter((p) => p.slug !== heroPost?.slug && !latestSlugSet.has(p.slug))
-.slice(0, 4);
+                <FixturesAndTables fixtures={scoreboard.fixtures} standings={scoreboard.standings} />
 
-// Category spotlights (exclude opinion/features since they have dedicated modules)
-const spotlightCategories = CATEGORIES.filter(
-(c) => !["news", "opinion", "features"].includes(c.slug) && getPostsByCategory(c.slug).length > 0
-).slice(0, 3);
+                {scoreboard.schools && scoreboard.schools.results.length > 0 && <SchoolsBoard data={scoreboard.schools} />}
 
-return (
-<div className="mx-auto max-w-7xl px-4 py-6 lg:px-8">
-{/* Hero */}
-{heroPost && (
-<section className="mb-10">
-<div className="mb-4 flex items-center gap-3">
-<span className="inline-flex items-center gap-1.5 rounded-full bg-accent/10 border border-accent/20 px-3 py-1 text-xs font-bold uppercase tracking-widest text-accent">
-<span className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse" />
-Top Story
-</span>
-</div>
-<PostCardFeatured post={heroPost} />
-</section>
-)}
+                {/* Latest */}
+                {latestPosts.length > 0 && (
+                    <section aria-labelledby="latest-h" className="mt-16">
+                        <div className="section-head">
+                            <h2 id="latest-h">Latest</h2>
+                            <MoreLink href="/archive">All stories</MoreLink>
+                        </div>
+                        <div className="grid gap-x-7 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
+                            {latestPosts.map((post) => (
+                                <PostCard key={post.slug} post={post} />
+                            ))}
+                        </div>
+                    </section>
+                )}
 
-{/* Latest Posts */}
-<section className="mb-14">
-<div className="flex items-center justify-between mb-6">
-<h2 className="font-display text-xl font-bold text-text">
-Latest
-</h2>
-<Link
-href="/archive"
-className="text-sm font-medium text-accent transition-colors hover:text-accent-hover"
->
-View All →
-</Link>
-</div>
-<div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-{latestPosts.map((post, i) => (
-<PostCard key={post.slug} post={post} priority={i < 2} />
-))}
-</div>
-</section>
+                {/* Features and opinion */}
+                {(featurePosts.length > 0 || opinionPosts.length > 0) && (
+                    <div className="mt-16 grid gap-10 lg:grid-cols-2">
+                        {[
+                            { id: "features", title: "Features", href: "/features", posts: featurePosts },
+                            { id: "opinion", title: "Opinion", href: "/opinion", posts: opinionPosts },
+                        ]
+                            .filter((col) => col.posts.length > 0)
+                            .map((col) => (
+                                <section key={col.id} aria-labelledby={`${col.id}-h`}>
+                                    <div className="section-head">
+                                        <h2 id={`${col.id}-h`}>{col.title}</h2>
+                                        <MoreLink href={col.href}>More {col.title.toLowerCase()}</MoreLink>
+                                    </div>
+                                    <ul>
+                                        {col.posts.map((post) => (
+                                            <li key={post.slug} className="border-b border-border py-4 first:pt-0 last:border-b-0">
+                                                <h3 className="font-body text-lg font-bold leading-snug tracking-normal">
+                                                    <Link href={`/posts/${post.slug}`} className="text-text hover:text-accent">
+                                                        {post.title}
+                                                    </Link>
+                                                </h3>
+                                                {post.dek && <p className="mt-1 line-clamp-2 text-[0.9375rem] leading-relaxed text-text-muted">{post.dek}</p>}
+                                                <p className="mt-1.5 text-[0.8125rem] text-text-dim">{getAuthorName(post.author)}</p>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </section>
+                            ))}
+                    </div>
+                )}
 
-<section className="mb-14 rounded-2xl border border-border bg-surface/60 p-6 md:p-8">
-<div className="flex items-center justify-between gap-4 mb-6 flex-wrap">
-<div>
-<h2 className="font-display text-xl font-bold text-text">
-Coverage Hubs
-</h2>
-<p className="mt-2 max-w-3xl text-sm text-text-muted">
-Explore the biggest topics in Jamaican basketball, from FIBA competition and school leagues to club basketball, 3x3, and player development.
-</p>
-</div>
-<Link
-href="/archive"
-className="text-sm font-medium text-accent transition-colors hover:text-accent-hover"
->
-Browse Archive →
-</Link>
-</div>
-<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-{coverageHubs.map((category) => {
-const count = getPostsByCategory(category.slug).length;
-return (
-<Link
-key={category.slug}
-href={category.slug === "news" ? "/news" : `/category/${category.slug}`}
-className="rounded-xl border border-border bg-bg/40 p-5 transition-colors hover:border-accent/40 hover:bg-surface"
->
-<p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">
-{count} article{count === 1 ? "" : "s"}
-</p>
-<h3 className="mt-2 font-display text-lg font-bold text-text">
-{category.label}
-</h3>
-<p className="mt-2 text-sm leading-relaxed text-text-muted">
-{category.description}
-</p>
-</Link>
-);
-})}
-</div>
-</section>
+                {/* Leagues and programs */}
+                <section aria-labelledby="leagues-h" className="mt-16">
+                    <div className="section-head">
+                        <h2 id="leagues-h">Leagues &amp; programs</h2>
+                        <MoreLink href="/leagues">All leagues</MoreLink>
+                    </div>
+                    <ul className="flex flex-wrap gap-2.5">
+                        {LEAGUE_HUBS.map((hub) => (
+                            <li key={hub.slug}>
+                                <Link
+                                    href={`/leagues/${hub.slug}`}
+                                    className="flex h-11 items-center rounded-full border border-border-hover px-5 text-[0.9375rem] font-semibold text-text transition-colors hover:border-ink hover:bg-ink hover:text-ink-text"
+                                >
+                                    {hub.shortLabel}
+                                </Link>
+                            </li>
+                        ))}
+                    </ul>
+                </section>
 
-<section className="mb-14 rounded-2xl border border-border bg-surface/60 p-6 md:p-8">
-<div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-<div>
-<h2 className="font-display text-xl font-bold text-text">
-Leagues & Programs
-</h2>
-<p className="mt-2 max-w-3xl text-sm text-text-muted">
-These hubs are built from the Jamaica Basketball datasheets so the site can track active leagues, school competitions, JABA programs, and academy pathways in one place.
-</p>
-</div>
-<Link
-href="/leagues"
-className="text-sm font-medium text-accent transition-colors hover:text-accent-hover"
->
-View All Leagues →
-</Link>
-</div>
-<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-{leagueHubs.map((hub) => {
-const relatedPosts = getPostsForLeagueHub(hub);
-return (
-<Link
-key={hub.slug}
-href={`/leagues/${hub.slug}`}
-className="rounded-xl border border-border bg-bg/40 p-5 transition-colors hover:border-accent/40 hover:bg-surface"
->
-<p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">
-{hub.teamCount} tracked teams
-</p>
-<h3 className="mt-2 font-display text-lg font-bold text-text">
-{hub.shortLabel}
-</h3>
-<p className="mt-2 text-sm leading-relaxed text-text-muted">
-{hub.status}
-</p>
-<p className="mt-4 text-sm text-text-dim">
-{relatedPosts.length} related article{relatedPosts.length === 1 ? "" : "s"}
-</p>
-</Link>
-);
-})}
-</div>
-</section>
+                {/* About and partnerships */}
+                <section aria-labelledby="about-h" className="mt-16 grid gap-8 border-t border-border pt-8 lg:grid-cols-[2fr_1fr]">
+                    <div>
+                        <h2 id="about-h" className="font-body text-lg font-bold tracking-normal">Jamaica basketball news, features and culture</h2>
+                        <p className="mt-2 max-w-3xl text-[0.9375rem] leading-relaxed text-text-muted">
+                            Jamaica Basketball is an independent publication covering the full basketball ecosystem in Jamaica: the{" "}
+                            <Link href="/category/national-team" className="font-semibold text-accent hover:text-accent-hover">national team</Link>,{" "}
+                            <Link href="/category/high-school" className="font-semibold text-accent hover:text-accent-hover">schoolboy and schoolgirl competitions</Link>,{" "}
+                            <Link href="/category/club-basketball" className="font-semibold text-accent hover:text-accent-hover">club leagues</Link>,{" "}
+                            <Link href="/category/3x3" className="font-semibold text-accent hover:text-accent-hover">3x3</Link> and the players shaping the game across the island.
+                        </p>
+                    </div>
+                    <div className="rounded-md bg-surface p-5">
+                        <h2 className="font-body text-base font-bold tracking-normal">Partner with us</h2>
+                        <p className="mt-1.5 text-sm leading-relaxed text-text-muted">Sponsorships, event coverage and brand partnerships.</p>
+                        <a href="mailto:partner@jamaicabasketball.online" className="mt-3 inline-flex text-sm font-semibold text-accent hover:text-accent-hover">
+                            partner@jamaicabasketball.online
+                        </a>
+                    </div>
+                </section>
+            </div>
 
-{/* Opinion & Features Module */}
-{(opinionPosts.length > 0 || featurePosts.length > 0) && (
-<section className="mb-14">
-<div className="grid gap-8 lg:grid-cols-2">
-{/* Opinion column */}
-{opinionPosts.length > 0 && (
-<div>
-<div className="flex items-center justify-between mb-5">
-<h2 className="font-display text-xl font-bold text-text">
-Opinion
-</h2>
-<Link
-href="/opinion"
-className="text-sm font-medium text-accent transition-colors hover:text-accent-hover"
->
-More →
-</Link>
-</div>
-<div className="space-y-4">
-{opinionPosts.map((post) => (
-<article key={post.slug} className="flex gap-4 rounded-lg border border-border bg-surface p-4 transition-colors hover:border-accent/30">
-<div className="min-w-0 flex-1">
-<Link href={`/posts/${post.slug}`}>
-<h3 className="font-display font-bold text-text transition-colors hover:text-accent line-clamp-2">
-{post.title}
-</h3>
-</Link>
-{post.dek && (
-<p className="mt-1 text-sm text-text-muted line-clamp-2">{post.dek}</p>
-)}
-<p className="mt-2 text-xs text-text-dim">{getAuthorName(post.author)}</p>
-</div>
-</article>
-))}
-</div>
-</div>
-)}
-
-{/* Features column */}
-{featurePosts.length > 0 && (
-<div>
-<div className="flex items-center justify-between mb-5">
-<h2 className="font-display text-xl font-bold text-text">
-Features
-</h2>
-<Link
-href="/features"
-className="text-sm font-medium text-accent transition-colors hover:text-accent-hover"
->
-More →
-</Link>
-</div>
-<div className="space-y-4">
-{featurePosts.map((post) => (
-<article key={post.slug} className="flex gap-4 rounded-lg border border-border bg-surface p-4 transition-colors hover:border-accent/30">
-<div className="min-w-0 flex-1">
-<Link href={`/posts/${post.slug}`}>
-<h3 className="font-display font-bold text-text transition-colors hover:text-accent line-clamp-2">
-{post.title}
-</h3>
-</Link>
-{post.dek && (
-<p className="mt-1 text-sm text-text-muted line-clamp-2">{post.dek}</p>
-)}
-<p className="mt-2 text-xs text-text-dim">{getAuthorName(post.author)}</p>
-</div>
-</article>
-))}
-</div>
-</div>
-)}
-</div>
-</section>
-)}
-
-{/* Trending / Recommended */}
-{trendingPosts.length > 0 && (
-<section className="mb-14">
-<h2 className="font-display text-xl font-bold text-text mb-6">
-Trending
-</h2>
-<div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-{trendingPosts.map((post) => (
-<PostCard key={post.slug} post={post} />
-))}
-</div>
-</section>
-)}
-
-{/* Sponsor Placeholder */}
-<div className="mb-14">
-<SponsorPlaceholder />
-</div>
-
-{/* Category Spotlights */}
-{spotlightCategories.map((cat) => {
-const catPosts = getPostsByCategory(cat.slug).slice(0, 3);
-if (catPosts.length === 0) return null;
-return (
-<section key={cat.slug} className="mb-14">
-<div className="flex items-center justify-between mb-6">
-<h2 className="font-display text-xl font-bold text-text">
-{cat.label}
-</h2>
-<Link
-href={`/category/${cat.slug}`}
-className="text-sm font-medium text-accent transition-colors hover:text-accent-hover"
->
-More {cat.label} →
-</Link>
-</div>
-<div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-{catPosts.map((post) => (
-<PostCard key={post.slug} post={post} />
-))}
-</div>
-</section>
-);
-})}
-
-{/* Partnership CTA */}
-<section className="mb-14 rounded-3xl overflow-hidden relative">
-<div className="absolute inset-0 bg-gradient-to-br from-accent/20 via-surface to-bg z-0" />
-<div className="relative z-10 px-8 py-12 md:px-12 md:py-16 text-center md:text-left flex flex-col md:flex-row items-center justify-between gap-8">
-<div className="max-w-2xl">
-<h2 className="font-display text-3xl md:text-4xl font-black text-text leading-tight mb-4">
-Partner with the Source of <span className="text-accent">Jamaica Basketball</span>
-</h2>
-<p className="text-lg text-text-muted leading-relaxed">
-Reach the most engaged basketball audience in Jamaica. We offer premium sponsorship spots, event coverage, and brand integration across our platforms.
-</p>
-</div>
-<Link
-href="mailto:partner@jamaicabasketball.online"
-className="inline-flex h-14 items-center justify-center rounded-full bg-accent px-10 text-base font-bold uppercase tracking-wider text-black transition-all hover:bg-accent-hover hover:scale-105 active:scale-95 shadow-xl shadow-accent/20"
->
-Become a Partner
-</Link>
-</div>
-</section>
-
-{/* Social Follow CTA */}
-<div className="mb-14">
-<SocialCta />
-</div>
-
-{/* SEO text block */}
-<section className="mt-10 mb-6 rounded-xl border border-border bg-surface/50 p-6 md:p-8">
-<h2 className="font-display text-lg font-bold text-text mb-3">
-Jamaica Basketball News, Features and Culture
-</h2>
-<p className="text-sm text-text-muted leading-relaxed max-w-3xl">
-Jamaica Basketball is an independent publishing platform focused on the full basketball ecosystem in Jamaica. We cover
-Jamaica basketball news, national team updates, schoolboy and schoolgirl competitions, club leagues, 3x3 events,
-player spotlights, and the wider culture shaping the game across the island.
-</p>
-<p className="mt-3 text-sm text-text-muted leading-relaxed max-w-3xl">
-Start with the <Link href="/news" className="text-accent hover:text-accent-hover">latest news</Link>, explore
-our <Link href="/category/national-team" className="text-accent hover:text-accent-hover">national team coverage</Link>,
-browse <Link href="/category/high-school" className="text-accent hover:text-accent-hover">high school basketball stories</Link>,
-or dig into <Link href="/category/3x3" className="text-accent hover:text-accent-hover">3x3 basketball in Jamaica</Link>.
-</p>
-</section>
-</div>
-);
+            <BriefingBand />
+        </>
+    );
 }

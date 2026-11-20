@@ -1,10 +1,16 @@
 "use client";
-import { useState } from "react";
+import { useId, useState } from "react";
 
-export default function NewsletterSignup() {
+interface NewsletterSignupProps {
+    /** "band": the large homepage briefing band. "compact": footer column. */
+    variant?: "band" | "compact";
+}
+
+/** Email signup posting to /api/subscribe (Brevo). Always rendered on an ink background. */
+export default function NewsletterSignup({ variant = "compact" }: NewsletterSignupProps) {
     const [email, setEmail] = useState("");
     const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
-    const [errorMsg, setErrorMsg] = useState("");
+    const inputId = useId();
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
@@ -20,47 +26,49 @@ export default function NewsletterSignup() {
             setStatus("success");
         } catch {
             setStatus("error");
-            setErrorMsg("Something went wrong. Please try again.");
         }
     }
 
-    return (
-        <div>
-            <h4 className="mb-1 text-xs font-bold uppercase tracking-widest text-accent">
-                Newsletter
-            </h4>
-            <p className="mb-3 text-sm text-text-muted leading-relaxed">
-                Jamaica Basketball stories, straight to your inbox.
+    const band = variant === "band";
+
+    if (status === "success") {
+        return (
+            <p role="status" className="flex items-center gap-2 rounded-full bg-ink-raised px-5 py-3 text-sm font-semibold text-gold">
+                <svg className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+                You&apos;re in. Check your inbox to confirm.
             </p>
-            {status === "success" ? (
-                <div className="flex items-center gap-2 rounded-lg border border-accent/30 bg-accent/10 px-4 py-3">
-                    <svg className="h-4 w-4 flex-shrink-0 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
-                    <span className="text-sm font-medium text-accent">You&apos;re in! Check your inbox.</span>
-                </div>
-            ) : (
-                <form onSubmit={handleSubmit} className="flex flex-col gap-2">
-                    <input
-                        type="email"
-                        required
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="your@email.com"
-                        className="w-full rounded-lg border border-border bg-bg px-3 py-2.5 text-sm text-text placeholder:text-text-dim focus:border-accent/50 focus:outline-none transition-colors"
-                    />
-                    <button
-                        type="submit"
-                        disabled={status === "loading"}
-                        className="w-full rounded-lg bg-accent px-4 py-2.5 text-sm font-bold text-black transition-all hover:bg-accent-hover disabled:opacity-60"
-                    >
-                        {status === "loading" ? "Subscribing…" : status === "error" ? "Retry" : "Subscribe"}
-                    </button>
-                    {status === "error" && (
-                        <p className="text-xs text-red-400">{errorMsg}</p>
-                    )}
-                </form>
+        );
+    }
+
+    return (
+        <form onSubmit={handleSubmit} className={band ? "flex flex-wrap items-end gap-2.5" : "flex flex-col gap-2"}>
+            <div className={band ? "flex min-w-[220px] flex-1 flex-col gap-1.5" : "flex flex-col gap-1.5"}>
+                <label htmlFor={inputId} className="text-[0.8125rem] font-semibold text-ink-muted">
+                    Email address
+                </label>
+                <input
+                    id={inputId}
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="you@example.com"
+                    autoComplete="email"
+                    className="h-12 w-full rounded-full border border-[#4A4F4B] bg-ink-raised px-4 text-base text-white placeholder:text-ink-muted focus:border-gold focus:outline-none"
+                />
+            </div>
+            <button
+                type="submit"
+                disabled={status === "loading"}
+                className="h-12 rounded-full bg-gold px-6 text-[0.9375rem] font-bold text-ink transition-colors hover:bg-gold-hover disabled:opacity-60"
+            >
+                {status === "loading" ? "Subscribing…" : status === "error" ? "Try again" : "Subscribe"}
+            </button>
+            {status === "error" && (
+                <p role="alert" className="w-full text-sm text-[#FFB4A8]">Something went wrong. Please try again.</p>
             )}
-        </div>
+        </form>
     );
 }

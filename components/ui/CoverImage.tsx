@@ -16,8 +16,8 @@ export default function CoverImage({ src, alt, priority, sizes, className, objec
 
     if (errored) {
         return (
-            <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-surface via-[#1a1a1a] to-bg">
-                <div className="flex flex-col items-center gap-2 opacity-30">
+            <div className="absolute inset-0 flex items-center justify-center bg-surface">
+                <div className="flex flex-col items-center gap-2 opacity-60" aria-label={alt} role="img">
                     <svg className="h-10 w-10 text-text-dim" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
                         <rect x="3" y="3" width="18" height="18" rx="2" />
                         <circle cx="8.5" cy="8.5" r="1.5" />

@@ -3,18 +3,27 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 import { CATEGORIES } from "@/lib/content";
 import { SITE } from "@/lib/utils";
 
 const NAV_LINKS = [
-    { href: "/news", label: "News" },
-    { href: "/leagues", label: "Leagues" },
     { href: "/category/national-team", label: "National Team" },
-    { href: "/category/high-school", label: "High School" },
-    { href: "/opinion", label: "Opinion" },
+    { href: "/category/high-school", label: "Schools" },
+    { href: "/leagues", label: "Leagues" },
+    { href: "/category/3x3", label: "3x3" },
+    { href: "/news", label: "News" },
     { href: "/features", label: "Features" },
+    { href: "/opinion", label: "Opinion" },
 ];
+
+function SearchIcon() {
+    return (
+        <svg className="h-[18px] w-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} strokeLinecap="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="7" />
+            <path d="M20 20l-3.5-3.5" />
+        </svg>
+    );
+}
 
 export default function Header() {
     const [mobileOpen, setMobileOpen] = useState(false);
@@ -29,102 +38,96 @@ export default function Header() {
         router.push(`/search?q=${encodeURIComponent(q)}`);
         setQuery("");
         setSearchOpen(false);
+        setMobileOpen(false);
     }
 
     return (
-        <header className="sticky top-0 z-50 border-b border-border bg-bg/90 backdrop-blur-md">
-            <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 lg:px-8">
-                {/* Logo */}
-                <Link href="/" className="flex flex-shrink-0 items-center gap-2 group">
-                    <Image
-                        src="/logo.jpg"
-                        alt="Jamaica Basketball"
-                        width={40}
-                        height={40}
-                        className="rounded-lg transition-transform group-hover:scale-105"
-                        priority
-                    />
-                    <span className="hidden font-display text-base font-bold tracking-tight text-text sm:inline">
-                        Jamaica Basketball
-                    </span>
-                    <span className="font-display text-base font-bold tracking-tight text-text sm:hidden">
-                        JB
-                    </span>
+        <header className="sticky top-0 z-50 border-b border-border bg-bg/95 backdrop-blur-md">
+            <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:gap-6 sm:py-3.5 lg:px-8">
+                <Link
+                    href="/"
+                    className="flex min-w-0 shrink items-baseline gap-1.5 font-display text-[1.375rem] font-extrabold uppercase leading-none tracking-[0.03em] text-text hover:text-text sm:gap-2 sm:text-[1.875rem]"
+                    aria-label="Jamaica Basketball home"
+                >
+                    <span>Jamaica</span>
+                    <span className="text-accent">Basketball</span>
                 </Link>
 
-                {/* Desktop nav */}
-                <nav className="hidden items-center gap-0.5 lg:flex">
+                <nav aria-label="Sections" className="hidden flex-1 items-center gap-1 xl:flex">
                     {NAV_LINKS.map((link) => (
                         <Link
                             key={link.href}
                             href={link.href}
-                            className="rounded-md px-2 py-2 text-sm font-medium text-text-muted transition-colors hover:bg-surface hover:text-text xl:px-3"
+                            className="rounded-md px-2.5 py-2 text-[0.9375rem] font-semibold text-text transition-colors hover:text-accent"
                         >
                             {link.label}
                         </Link>
                     ))}
                 </nav>
 
-                {/* Desktop search */}
-                <div className="hidden lg:flex items-center">
-                    {searchOpen ? (
-                        <form onSubmit={handleSearch} className="flex items-center gap-2">
-                            <input
-                                autoFocus
-                                type="search"
-                                value={query}
-                                onChange={(e) => setQuery(e.target.value)}
-                                placeholder="Search stories…"
-                                className="w-32 rounded-lg border border-border bg-surface px-3 py-1.5 text-sm text-text placeholder:text-text-dim focus:border-accent/50 focus:outline-none transition-colors xl:w-52"
-                            />
+                <div className="flex shrink-0 items-center gap-2">
+                    <div className="hidden xl:flex items-center">
+                        {searchOpen ? (
+                            <form onSubmit={handleSearch} role="search" className="flex items-center gap-2">
+                                <label htmlFor="header-search" className="sr-only">Search stories</label>
+                                <input
+                                    id="header-search"
+                                    autoFocus
+                                    type="search"
+                                    value={query}
+                                    onChange={(e) => setQuery(e.target.value)}
+                                    placeholder="Search stories…"
+                                    className="h-11 w-44 rounded-full border border-border-hover bg-bg px-4 text-sm text-text placeholder:text-text-dim focus:border-accent focus:outline-none 2xl:w-56"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => { setSearchOpen(false); setQuery(""); }}
+                                    className="flex h-11 w-11 items-center justify-center rounded-full text-text-dim transition-colors hover:text-text"
+                                    aria-label="Close search"
+                                >
+                                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </form>
+                        ) : (
                             <button
                                 type="button"
-                                onClick={() => { setSearchOpen(false); setQuery(""); }}
-                                className="rounded-md p-1.5 text-text-dim hover:text-text transition-colors"
-                                aria-label="Close search"
+                                onClick={() => setSearchOpen(true)}
+                                className="flex h-11 w-11 items-center justify-center rounded-full border border-border-hover text-text transition-colors hover:border-text"
+                                aria-label="Search"
                             >
-                                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                                </svg>
+                                <SearchIcon />
                             </button>
-                        </form>
-                    ) : (
-                        <button
-                            onClick={() => setSearchOpen(true)}
-                            className="flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-1.5 text-sm text-text-dim transition-colors hover:border-accent/30 hover:text-text"
-                            aria-label="Search"
-                        >
-                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                <circle cx="11" cy="11" r="8" />
-                                <path d="m21 21-4.35-4.35" />
-                            </svg>
-                            <span className="text-xs">Search</span>
-                        </button>
-                    )}
-                </div>
+                        )}
+                    </div>
 
-                <div className="flex shrink-0 items-center gap-1 sm:gap-2">
                     <a
                         href={SITE.socials.telegram}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="rounded-lg bg-accent px-3 py-2 text-sm font-bold text-black transition-colors hover:bg-accent-hover"
+                        className="flex h-11 min-w-11 items-center justify-center gap-2 rounded-full bg-accent px-3 text-[0.9375rem] font-semibold text-on-accent transition-colors hover:bg-accent-hover hover:text-on-accent sm:px-5"
                     >
-                        <span className="hidden sm:inline">Join </span>Telegram
+                        <svg className="h-[18px] w-[18px] sm:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <path d="M21 3 3 10.5l7 2.5m11-10-4 18-7-8m11-10L10 13" />
+                        </svg>
+                        <span className="sr-only sm:not-sr-only">Join Telegram</span>
                     </a>
-                    {/* Mobile hamburger */}
+
                     <button
+                        type="button"
                         onClick={() => setMobileOpen(!mobileOpen)}
-                        className="flex h-10 w-10 items-center justify-center rounded-lg text-text-muted transition-colors hover:bg-surface lg:hidden"
-                        aria-label="Toggle menu"
+                        className="flex h-11 w-11 items-center justify-center rounded-full border border-border-hover text-text transition-colors hover:border-text xl:hidden"
+                        aria-label={mobileOpen ? "Close menu" : "Open menu"}
                         aria-expanded={mobileOpen}
+                        aria-controls="mobile-menu"
                     >
                         {mobileOpen ? (
-                            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
                                 <path d="M6 18L18 6M6 6l12 12" />
                             </svg>
                         ) : (
-                            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
                                 <path d="M4 6h16M4 12h16M4 18h16" />
                             </svg>
                         )}
@@ -132,50 +135,51 @@ export default function Header() {
                 </div>
             </div>
 
-            {/* Mobile menu */}
             {mobileOpen && (
-                <nav className="border-t border-border bg-bg px-4 pb-4 lg:hidden">
-                    {/* Mobile search */}
-                    <form onSubmit={handleSearch} className="mt-3 flex items-center gap-2">
+                <nav id="mobile-menu" aria-label="Menu" className="border-t border-border bg-bg px-4 pb-5 xl:hidden">
+                    <form onSubmit={handleSearch} role="search" className="mt-4 flex items-center gap-2">
+                        <label htmlFor="mobile-search" className="sr-only">Search stories</label>
                         <input
+                            id="mobile-search"
                             type="search"
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
                             placeholder="Search stories…"
-                            className="flex-1 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text placeholder:text-text-dim focus:border-accent/50 focus:outline-none"
+                            className="h-11 flex-1 rounded-full border border-border-hover bg-bg px-4 text-base text-text placeholder:text-text-dim focus:border-accent focus:outline-none"
                         />
                         <button
                             type="submit"
-                            className="rounded-lg bg-accent px-3 py-2 text-xs font-bold text-black"
+                            className="flex h-11 items-center rounded-full bg-ink px-5 text-sm font-semibold text-ink-text"
                         >
-                            Go
+                            Search
                         </button>
                     </form>
-                    <div className="mt-3">
+                    <div className="mt-3 grid grid-cols-2 gap-x-4">
                         {NAV_LINKS.map((link) => (
                             <Link
                                 key={link.href}
                                 href={link.href}
                                 onClick={() => setMobileOpen(false)}
-                                className="block rounded-md px-3 py-3 text-sm font-medium text-text-muted transition-colors hover:bg-surface hover:text-text"
+                                className="block border-b border-border py-3 font-display text-xl font-bold text-text"
                             >
                                 {link.label}
                             </Link>
                         ))}
                     </div>
-                    <div className="border-t border-border pt-2 mt-2">
-                        {CATEGORIES.filter(
-                            (c) => !NAV_LINKS.some((l) => l.href.includes(c.slug))
-                        ).map((c) => (
+                    <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2">
+                        {CATEGORIES.filter((c) => !NAV_LINKS.some((l) => l.href.endsWith(`/${c.slug}`)) && !["news", "opinion", "features"].includes(c.slug)).map((c) => (
                             <Link
                                 key={c.slug}
                                 href={`/category/${c.slug}`}
                                 onClick={() => setMobileOpen(false)}
-                                className="block rounded-md px-3 py-3 text-sm font-medium text-text-muted transition-colors hover:bg-surface hover:text-text"
+                                className="py-1.5 text-sm font-medium text-text-muted hover:text-accent"
                             >
                                 {c.label}
                             </Link>
                         ))}
+                        <Link href="/archive" onClick={() => setMobileOpen(false)} className="py-1.5 text-sm font-medium text-text-muted hover:text-accent">
+                            Archive
+                        </Link>
                     </div>
                 </nav>
             )}

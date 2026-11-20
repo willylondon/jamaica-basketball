@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import NewsTicker from "@/components/ui/NewsTicker";
+import ScoreStrip from "@/components/ui/ScoreStrip";
 import { OrganizationJsonLd, WebSiteJsonLd } from "@/components/seo/JsonLd";
 import { SITE } from "@/lib/utils";
 
@@ -55,9 +55,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en-JM" className="dark">
+    <html lang="en-JM">
       <head>
-        <meta name="theme-color" content="#0A0A0A" />
+        <meta name="theme-color" content="#111412" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -69,7 +69,7 @@ export default function RootLayout({
           href={`${SITE.url}/feed.xml`}
         />
         <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap"
           rel="stylesheet"
         />
         <OrganizationJsonLd />
@@ -88,9 +88,15 @@ export default function RootLayout({
             gtag('config', 'G-BR1R18NB1V');
           `}
         </Script>
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[300] focus:rounded-full focus:bg-ink focus:px-5 focus:py-3 focus:text-ink-text"
+        >
+          Skip to content
+        </a>
+        <ScoreStrip />
         <Header />
-        <NewsTicker />
-        <main className="flex-1">{children}</main>
+        <main id="main" className="flex-1">{children}</main>
         <Footer />
       </body>
     </html>

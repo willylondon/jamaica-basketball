@@ -21,7 +21,7 @@ export default function LeaguesPage() {
                     Leagues & Programs
                 </h1>
                 <p className="mt-2 max-w-3xl text-text-muted">
-                    Built from the Jamaica Basketball datasheets, these hubs reflect the active competition layers and development pathways currently tracked in the ecosystem.
+                    The competitions, programs and development pathways we follow across Jamaican basketball, from the federation and the NBL to school and community leagues.
                 </p>
             </header>
 

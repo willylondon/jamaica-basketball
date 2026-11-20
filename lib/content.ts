@@ -65,6 +65,14 @@ export function getCategoryLabel(slug: string): string {
     return getCategoryBySlug(slug)?.label ?? slug;
 }
 
+/** Site-wide fallback graphics that are not real story photos. */
+const GENERIC_IMAGES = new Set(["/og-default.jpg", "/logo.jpg", "/images/uploads/placeholder.jpg"]);
+
+/** True when the post should show a typographic cover rather than its image. */
+export function usesTypographicCover(post: Pick<Post, "image"> & { coverStat?: string }): boolean {
+    return Boolean(post.coverStat) || !post.image || GENERIC_IMAGES.has(post.image);
+}
+
 /** Return all published posts sorted newest first */
 export function getPublishedPosts(): Post[] {
     return posts
