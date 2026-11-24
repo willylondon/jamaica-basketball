@@ -30,10 +30,16 @@ if (process.env.GITHUB_ACTIONS === "true" && process.env.UPSTASH_REDIS_REST_URL 
   await redis("SET", key, JSON.stringify(report), "EX", "604800");
   console.log(`Private report stored at ${key}`);
 }
-for (const [name, { status, leads }] of Object.entries(discovery)) console.log(`${name}: ${status} (${leads.length} leads)`);
+for (const [name, { status, leads, errors = [] }] of Object.entries(discovery)) {
+  console.log(`${name}: ${status} (${leads.length} leads)`);
+  for (const { query, message } of errors) console.log(`  ${query}: ${message}`);
+  // Discovery only gathers leads for the editors, so a failing source warns instead of failing the run.
+  if (["failed", "partial"].includes(status) && process.env.GITHUB_ACTIONS === "true") {
+    console.log(`::warning title=${name} discovery ${status}::${errors[0]?.message || "see log"}`);
+  }
+}
 for (const result of publication) console.log(result.slug, result.channel || "", result.status, result.publicUrl || result.submissionId || "");
 if (publication.length === 0 && !process.argv.includes("--discovery-only")) console.log("No recent approved stories are queued for syndication.");
-if (Object.values(discovery).some(({ status }) => ["failed", "partial"].includes(status)) ||
-  publication.some(({ status }) => ["needs-review", "configuration-or-service-error", "site-check-error"].includes(status))) {
+if (publication.some(({ status }) => ["needs-review", "configuration-or-service-error", "site-check-error"].includes(status))) {
   process.exitCode = 1;
 }

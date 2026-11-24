@@ -6,8 +6,29 @@ export async function json(url, options = {}) {
   } catch {
     throw new Error(`${service} request could not be confirmed`);
   }
-  if (!response.ok) throw new Error(`${service} returned HTTP ${response.status}`);
+  if (!response.ok) {
+    const detail = await errorDetail(response);
+    throw new Error(`${service} returned HTTP ${response.status}${detail ? `: ${detail}` : ""}`);
+  }
   return response.json();
+}
+
+// Surface the service's own reason (e.g. Meta's error.message) without echoing long or credential-like strings.
+async function errorDetail(response) {
+  let text;
+  try {
+    text = await response.text();
+  } catch {
+    return "";
+  }
+  let detail = text;
+  try {
+    const body = JSON.parse(text);
+    const error = body?.error;
+    detail = [error?.message, error?.code && `code ${error.code}`, error?.error_subcode && `subcode ${error.error_subcode}`]
+      .filter(Boolean).join(", ") || (typeof error === "string" && error) || body?.message || text;
+  } catch {}
+  return String(detail).replace(/[A-Za-z0-9_\-.]{40,}/g, "[redacted]").replace(/\s+/g, " ").trim().slice(0, 300);
 }
 
 export function bearer(token) {
