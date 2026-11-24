@@ -30,9 +30,10 @@ if (process.env.GITHUB_ACTIONS === "true" && process.env.UPSTASH_REDIS_REST_URL 
   await redis("SET", key, JSON.stringify(report), "EX", "604800");
   console.log(`Private report stored at ${key}`);
 }
-for (const [name, { status, leads, errors = [] }] of Object.entries(discovery)) {
+for (const [name, { status, leads, errors = [], stopped }] of Object.entries(discovery)) {
   console.log(`${name}: ${status} (${leads.length} leads)`);
   for (const { query, message } of errors) console.log(`  ${query}: ${message}`);
+  if (stopped) console.log(`  ${stopped.query}: ${stopped.reason} — ${stopped.message}`);
   // Discovery only gathers leads for the editors, so a failing source warns instead of failing the run.
   if (["failed", "partial"].includes(status) && process.env.GITHUB_ACTIONS === "true") {
     console.log(`::warning title=${name} discovery ${status}::${errors[0]?.message || "see log"}`);

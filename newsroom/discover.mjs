@@ -52,7 +52,8 @@ async function searchInstagram() {
   if (!token || !/^\d+$/.test(id || "")) return null;
   const handles = (process.env.IG_DISCOVERY_HANDLES || "").split(",")
     .map((handle) => handle.trim()).filter((handle) => /^[a-zA-Z0-9._]{1,30}$/.test(handle)).slice(0, 8);
-  return searchEach([...hashtags.map((tag) => `#${tag}`), ...handles.map((handle) => `@${handle}`)], async (query) => {
+  const queries = [...handles.map((handle) => `@${handle}`), ...hashtags.map((tag) => `#${tag}`)];
+  return searchEach(queries, async (query) => {
     const name = query.slice(1);
     if (query.startsWith("@")) {
       const fields = `business_discovery.username(${name}){media.limit(10){permalink,timestamp}}`;
@@ -67,12 +68,16 @@ async function searchInstagram() {
     if (!/^\d+$/.test(hashtagId || "")) return [];
     const media = await graph(`${hashtagId}/recent_media`, token, { user_id: id, fields: "permalink,timestamp", limit: "25" });
     return (media.data || []).map(({ permalink, timestamp }) => ({ url: permalink, date: timestamp }));
+  }, (query, error) => {
+    if (query.startsWith("#") && error?.code === 10) return "hashtags-unapproved";
   });
 }
 
-async function searchEach(queries, search) {
+async function searchEach(queries, search, stopOnError) {
   const leads = new Map();
   const errors = [];
+  let completed = 0;
+  let stopped;
   for (const query of queries) {
     try {
       for (const lead of await search(query)) {
@@ -81,12 +86,20 @@ async function searchEach(queries, search) {
         if (current) current.queries.push(query);
         else leads.set(lead.url, { ...lead, queries: [query] });
       }
+      completed++;
     } catch (error) {
-      errors.push({ query, message: String(error?.message || error) });
+      const message = String(error?.message || error);
+      const reason = stopOnError?.(query, error);
+      if (reason) {
+        stopped = { reason, query, message };
+        break;
+      }
+      errors.push({ query, message });
     }
   }
   const failures = errors.length;
-  return { status: failures === queries.length ? "failed" : failures ? "partial" : "ok", failures, errors, leads: [...leads.values()] };
+  const status = failures ? (completed ? "partial" : "failed") : stopped?.reason || "ok";
+  return { status, failures, errors, ...(stopped && { stopped }), leads: [...leads.values()] };
 }
 
 export async function discover() {

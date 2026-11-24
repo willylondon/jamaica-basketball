@@ -4,6 +4,7 @@ import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
+import { discover } from "./discover.mjs";
 import { handleInstagramEvent, instagramEvents, replyText, signatureMatches } from "./inbox.mjs";
 import { approvedPosts, syndicate, verifyTargets } from "./publish.mjs";
 import { publicationLedger } from "./publication-ledger.mjs";
@@ -51,6 +52,78 @@ function livePost(preview) {
   const metadata = preview ? `<meta property="og:image" content="${site}${preview}">` : "";
   return new Response(`${metadata}<article data-newsroom-syndication="approved">`);
 }
+
+const discoveryEnv = {
+  ...metaEnv, IG_API_MODE: "unified", IG_DISCOVERY_USER_TOKEN: "", IG_FACEBOOK_LOGIN_ID: "",
+  IG_DISCOVERY_HANDLES: "", BRAVE_SEARCH_API_KEY: "", X_BEARER_TOKEN: "",
+};
+
+function graphFailure(code, message) {
+  return Response.json({ error: { code, message } }, { status: 400 });
+}
+
+test("Instagram keeps Business Discovery leads and stops after the first hashtag permission denial", async (t) => {
+  const requests = [];
+  const timestamp = new Date().toISOString();
+  const permalink = "https://www.instagram.com/p/example/";
+  mockedProviders(t, { ...discoveryEnv, IG_DISCOVERY_HANDLES: "basketballjamaica" }, (url) => {
+    requests.push([url.hostname, url.pathname, url.searchParams.get("fields") || url.searchParams.get("q")]);
+    if (url.pathname === "/v27.0/1") {
+      return Response.json({ business_discovery: { media: { data: [{ permalink, timestamp }] } } });
+    }
+    return graphFailure(10, "Instagram Public Content Access requires approval for fixture");
+  });
+
+  const { instagram } = await discover();
+  assert.deepEqual(requests, [
+    ["graph.facebook.com", "/v27.0/1", "business_discovery.username(basketballjamaica){media.limit(10){permalink,timestamp}}"],
+    ["graph.facebook.com", "/v27.0/ig_hashtag_search", "jamaicabasketball"],
+  ]);
+  assert.deepEqual(instagram, {
+    status: "hashtags-unapproved", failures: 0, errors: [],
+    stopped: {
+      reason: "hashtags-unapproved", query: "#jamaicabasketball",
+      message: "graph.facebook.com returned HTTP 400: Instagram Public Content Access requires approval for [redacted], code 10",
+    },
+    leads: [{ url: permalink, date: timestamp, queries: ["@basketballjamaica"] }],
+  });
+});
+
+test("Instagram logs handle denials and continues past other hashtag errors", async (t) => {
+  const queries = [];
+  mockedProviders(t, { ...discoveryEnv, IG_DISCOVERY_HANDLES: "basketballjamaica,pmblcamps" }, (url) => {
+    const query = url.searchParams.get("q") || url.searchParams.get("fields").match(/username\(([^)]+)\)/)[1];
+    queries.push(query);
+    if (query === "basketballjamaica") return graphFailure(10, "Application does not have permission for this action");
+    if (query === "jamaicabasketball") return graphFailure(100, "Invalid hashtag");
+    return Response.json({ data: [] });
+  });
+
+  const { instagram } = await discover();
+  assert.deepEqual(queries, ["basketballjamaica", "pmblcamps", "jamaicabasketball", "jamaicanbasketball", "issabasketball", "jabasketball"]);
+  assert.equal(instagram.status, "partial");
+  assert.equal(instagram.failures, 2);
+  assert.equal(instagram.stopped, undefined);
+  assert.deepEqual(instagram.errors, [
+    { query: "@basketballjamaica", message: "graph.facebook.com returned HTTP 400: Application does not have permission for this action, code 10" },
+    { query: "#jamaicabasketball", message: "graph.facebook.com returned HTTP 400: Invalid hashtag, code 100" },
+  ]);
+});
+
+test("Instagram reports missing hashtag approval when the recent media request is denied", async (t) => {
+  const paths = [];
+  mockedProviders(t, discoveryEnv, (url) => {
+    paths.push(url.pathname);
+    if (url.pathname === "/v27.0/ig_hashtag_search") return Response.json({ data: [{ id: "123" }] });
+    return graphFailure(10, "Instagram Public Content Access requires approval");
+  });
+
+  const { instagram } = await discover();
+  assert.deepEqual(paths, ["/v27.0/ig_hashtag_search", "/v27.0/123/recent_media"]);
+  assert.equal(instagram.status, "hashtags-unapproved");
+  assert.equal(instagram.failures, 0);
+  assert.equal(instagram.stopped.query, "#jamaicabasketball");
+});
 
 test("only explicit approvals enter the queue and dry-run sends no requests", async (t) => {
   const directory = await mkdtemp(join(tmpdir(), "jb-newsroom-"));

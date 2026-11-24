@@ -7,28 +7,36 @@ export async function json(url, options = {}) {
     throw new Error(`${service} request could not be confirmed`);
   }
   if (!response.ok) {
-    const detail = await errorDetail(response);
-    throw new Error(`${service} returned HTTP ${response.status}${detail ? `: ${detail}` : ""}`);
+    const authorization = new Headers(options.headers).get("Authorization");
+    const token = authorization?.match(/^Bearer (.+)$/i)?.[1];
+    const { detail, code } = await errorDetail(response, token);
+    const error = new Error(`${service} returned HTTP ${response.status}${detail ? `: ${detail}` : ""}`);
+    if (code !== undefined) error.code = code;
+    throw error;
   }
   return response.json();
 }
 
 // Surface the service's own reason (e.g. Meta's error.message) without echoing long or credential-like strings.
-async function errorDetail(response) {
+async function errorDetail(response, token) {
   let text;
   try {
     text = await response.text();
   } catch {
-    return "";
+    return {};
   }
   let detail = text;
+  let code;
   try {
     const body = JSON.parse(text);
     const error = body?.error;
+    code = error?.code;
     detail = [error?.message, error?.code && `code ${error.code}`, error?.error_subcode && `subcode ${error.error_subcode}`]
       .filter(Boolean).join(", ") || (typeof error === "string" && error) || body?.message || text;
   } catch {}
-  return String(detail).replace(/[A-Za-z0-9_\-.]{40,}/g, "[redacted]").replace(/\s+/g, " ").trim().slice(0, 300);
+  detail = String(detail);
+  if (token) detail = detail.replaceAll(token, "[redacted]");
+  return { code, detail: detail.replace(/[A-Za-z0-9_\-.]{40,}/g, "[redacted]").replace(/\s+/g, " ").trim().slice(0, 300) };
 }
 
 export function bearer(token) {
