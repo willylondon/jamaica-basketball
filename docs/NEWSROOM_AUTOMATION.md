@@ -21,6 +21,7 @@ Use the repository's `newsroom` environment and restrict it to `main`. Enter cre
 | `X_BEARER_TOKEN` | Secret | X recent search with read access and a funded project |
 | `IG_DISCOVERY_USER_TOKEN` | Optional secret | Dedicated Meta Facebook Login token for Instagram hashtag and Business Discovery |
 | `IG_FACEBOOK_LOGIN_ID` | Optional variable | Professional account ID for the dedicated discovery token |
+| `IG_DISCOVERY_HANDLES` | Optional repository variable | Up to eight comma-separated Instagram Business or Creator usernames, without `@` |
 | `IG_DISCOVERY_HANDLES` | Optional variable | Up to eight verified public professional handles, comma-separated without @ |
 | `IG_API_MODE` | Variable | Use `unified` for this Meta app. The earlier Instagram Login setup uses `instagram-login`. |
 | `IG_ACCESS_TOKEN` | Secret | Business Integration System User Access Token for the Jamaica Basketball assets |
@@ -41,6 +42,18 @@ The publishing job uses durable GitHub refs under `refs/newsroom/publications/`.
 If a claim has no receipt, look up the actual post on the Page or profile. Keep the claim while the outcome is uncertain. An operator can reconcile it with a confirmed post ID or release the reservation after confirming there was no post and no run is still processing the claim. Keep the same ledger across runs so retries retain their claims.
 
 [GitHub environment secrets](https://docs.github.com/en/actions/how-tos/deploy/configure-and-manage-deployments/manage-environments) · [Brave Search API](https://api-dashboard.search.brave.com/app/documentation/web-search/response-headers) · [X developer console](https://console.x.com/) · [Meta app dashboard](https://developers.facebook.com/apps/1583995230155751/dashboard/) · [Facebook Page publishing](https://developers.facebook.com/docs/graph-api/reference/page/feed/) · [Instagram Unified Login](https://developers.facebook.com/documentation/instagram-platform/instagram-api-with-unified-login/)
+
+## Instagram discovery and App Review
+
+The workflow searches configured handles first. Meta code 10 on a hashtag lookup or its recent media request stops the remaining hashtag queries for that run and logs `hashtags-unapproved` with Meta's reason. A later run can pick up approval automatically.
+
+If the Unified Login token is denied for handles, Meta's Business Discovery endpoint reference documents a Facebook User token with `instagram_basic`, `instagram_manage_insights` and `pages_read_engagement`. It also lists `ads_read` or `ads_management` when the Page role was granted through Business Manager. For that setup, put the token in the `IG_DISCOVERY_USER_TOKEN` environment secret and its matching account ID in `IG_FACEBOOK_LOGIN_ID`. Verify with a manual workflow run with **Keep this manual run in dry-run** selected. [Business Discovery endpoint reference](https://developers.facebook.com/documentation/instagram-platform/instagram-graph-api/reference/ig-user/business_discovery)
+
+### Instagram Public Content Access checklist
+
+- In **Jamaica Basketball Newsroom** (app ID `1583995230155751`), complete business verification and request **Instagram Public Content Access** and `instagram_basic` if it still needs approval. Meta lists both for Hashtag Search. Publishing and messaging permissions serve separate workflows. [Feature requirements and allowed uses](https://developers.facebook.com/documentation/development/features-reference/instagram-public-content-access) · [Hashtag Search requirements](https://developers.facebook.com/documentation/instagram-platform/instagram-api-with-facebook-login/hashtag-search)
+- Describe the actual use case. The newsroom checks a small set of public Jamaican basketball hashtags for reporting leads, retains post links and timestamps in a private report for up to seven days when configured, and has an editor verify leads before using them. Explain how the actual use fits one of Meta's listed uses, such as understanding the publication's audience and developing its content strategy if that is the real purpose. Meta may decline general news monitoring. [Allowed uses](https://developers.facebook.com/documentation/development/features-reference/instagram-public-content-access)
+- Record the real flow in English at 1080p or higher with captions or callouts. Show account selection and the permission grant if the app has an interactive login, then a manual dry run and a successful hashtag lookup whose resulting links and dates appear in the editor's private report. Use an authorized review or test setup and keep credentials off-screen. Meta requires a successful API call within 30 days for each permission requesting Advanced Access. In the reviewer notes, explain that the workflow runs in GitHub Actions, give exact steps and approved access to reproduce the flow, and state that the editor uses the report for lead review. [Meta submission walkthrough](https://developers.facebook.com/docs/app-review/submission-guide/) · [Screen recording guidance](https://developers.facebook.com/docs/app-review/submission-guide/screen-recordings)
 
 ## Vercel and Instagram inbox
 
