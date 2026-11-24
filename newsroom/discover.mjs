@@ -72,7 +72,7 @@ async function searchInstagram() {
 
 async function searchEach(queries, search) {
   const leads = new Map();
-  let failures = 0;
+  const errors = [];
   for (const query of queries) {
     try {
       for (const lead of await search(query)) {
@@ -81,11 +81,12 @@ async function searchEach(queries, search) {
         if (current) current.queries.push(query);
         else leads.set(lead.url, { ...lead, queries: [query] });
       }
-    } catch {
-      failures++;
+    } catch (error) {
+      errors.push({ query, message: String(error?.message || error) });
     }
   }
-  return { status: failures === queries.length ? "failed" : failures ? "partial" : "ok", failures, leads: [...leads.values()] };
+  const failures = errors.length;
+  return { status: failures === queries.length ? "failed" : failures ? "partial" : "ok", failures, errors, leads: [...leads.values()] };
 }
 
 export async function discover() {
