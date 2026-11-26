@@ -39,7 +39,11 @@ for (const [name, { status, leads, errors = [], stopped }] of Object.entries(dis
     console.log(`::warning title=${name} discovery ${status}::${errors[0]?.message || "see log"}`);
   }
 }
-for (const result of publication) console.log(result.slug, result.channel || "", result.status, result.publicUrl || result.submissionId || "");
+for (const result of publication) {
+  const parts = [result.slug, result.channel || "", result.status, result.publicUrl || result.submissionId || ""];
+  if (result.detail) parts.push(`— ${result.detail}`);
+  console.log(parts.join(" "));
+}
 if (publication.length === 0 && !process.argv.includes("--discovery-only")) console.log("No recent approved stories are queued for syndication.");
 if (publication.some(({ status }) => ["needs-review", "configuration-or-service-error", "site-check-error"].includes(status))) {
   process.exitCode = 1;

@@ -101,12 +101,67 @@ async function instagramPhotoUrl(image) {
   return url.href;
 }
 
+export function imageDimensions(bytes, mime) {
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  if (/^image\/jpeg(?:;|$)/i.test(mime)) {
+    if (bytes.byteLength < 4 || view.getUint16(0) !== 0xffd8) return null;
+    let offset = 2;
+    while (offset + 4 <= bytes.byteLength) {
+      while (offset < bytes.byteLength && bytes[offset] === 0xff) offset++;
+      if (offset >= bytes.byteLength) break;
+      const marker = bytes[offset++];
+      if (marker === 0xd8 || marker === 0xd9 || marker === 0x01 || (marker >= 0xd0 && marker <= 0xd7)) continue;
+      if (offset + 2 > bytes.byteLength) break;
+      const length = view.getUint16(offset);
+      if (length < 2 || offset + length > bytes.byteLength) break;
+      const isSof = (marker >= 0xc0 && marker <= 0xc3) || (marker >= 0xc5 && marker <= 0xc7) ||
+        (marker >= 0xc9 && marker <= 0xcb) || (marker >= 0xcd && marker <= 0xcf);
+      if (isSof && length >= 7) {
+        return { width: view.getUint16(offset + 5), height: view.getUint16(offset + 3) };
+      }
+      offset += length;
+    }
+    return null;
+  }
+  if (/^image\/webp(?:;|$)/i.test(mime)) {
+    if (bytes.byteLength < 30 ||
+        String.fromCharCode(...bytes.subarray(0, 4)) !== "RIFF" ||
+        String.fromCharCode(...bytes.subarray(8, 12)) !== "WEBP") return null;
+    const chunk = String.fromCharCode(...bytes.subarray(12, 16));
+    if (chunk === "VP8 " && bytes[23] === 0x9d && bytes[24] === 0x01 && bytes[25] === 0x2a) {
+      return { width: view.getUint16(26, true) & 0x3fff, height: view.getUint16(28, true) & 0x3fff };
+    }
+    if (chunk === "VP8L" && bytes[20] === 0x2f) {
+      const bits = view.getUint32(21, true);
+      return { width: (bits & 0x3fff) + 1, height: ((bits >> 14) & 0x3fff) + 1 };
+    }
+    if (chunk === "VP8X") {
+      return {
+        width: 1 + (bytes[24] | (bytes[25] << 8) | (bytes[26] << 16)),
+        height: 1 + (bytes[27] | (bytes[28] << 8) | (bytes[29] << 16)),
+      };
+    }
+    return null;
+  }
+  return null;
+}
+
 async function tiktokPhotoUrl(image) {
   const url = articlePhotoUrl(image);
   if (!url) return null;
   const headers = await photoHeaders(url);
-  if (!/^image\/(?:jpeg|webp)(?:;|$)/i.test(headers?.get("content-type") || "") ||
+  const mime = headers?.get("content-type") || "";
+  if (!/^image\/(?:jpeg|webp)(?:;|$)/i.test(mime) ||
       Number(headers.get("content-length")) > 20_000_000) return null;
+  const response = await fetch(url, { redirect: "error", cache: "no-store", signal: AbortSignal.timeout(12000) });
+  if (!response.ok) return null;
+  const bytes = new Uint8Array(await response.arrayBuffer());
+  if (bytes.byteLength > 20_000_000) return null;
+  const dimensions = imageDimensions(bytes, response.headers.get("content-type") || mime);
+  if (!dimensions) return null;
+  const shortSide = Math.min(dimensions.width, dimensions.height);
+  const longSide = Math.max(dimensions.width, dimensions.height);
+  if (shortSide < 360 || shortSide > 1080 || longSide > 1920) return null;
   return url.href;
 }
 
@@ -236,18 +291,24 @@ export async function syndicate(posts, live, now = new Date()) {
             await ledger.record(`blotato-pending:${submissionId}`);
           }
           let result = await blotatoPostStatus(account, submissionId);
-          if (process.env.BLOTATO_REPLAY_SLUGS && result.status === "in-progress") {
-            for (let attempt = 0; attempt < 3 && result.status === "in-progress"; attempt++) {
-              await new Promise((resolve) => setTimeout(resolve, 10000));
-              result = await blotatoPostStatus(account, submissionId);
-            }
+          const pollMs = Number(process.env.BLOTATO_POLL_MS ?? 10000);
+          for (let attempt = 0; attempt < 3 && result.status === "in-progress"; attempt++) {
+            if (pollMs > 0) await new Promise((resolve) => setTimeout(resolve, pollMs));
+            result = await blotatoPostStatus(account, submissionId);
           }
           if (result.status === "published") {
             await ledger.record(`blotato-published:${submissionId}`);
             results.push({ slug, channel, status: "published", publicUrl: result.publicUrl });
           } else {
             const pending = result.status === "in-progress" || result.status === "scheduled";
-            results.push({ slug, channel, status: pending ? "submitted" : "needs-review", submissionId });
+            const detail = !pending
+              ? [result.status, typeof result.errorMessage === "string" && result.errorMessage.trim()]
+                .filter(Boolean).join(": ").slice(0, 300)
+              : undefined;
+            results.push({
+              slug, channel, status: pending ? "submitted" : "needs-review", submissionId,
+              ...(detail && { detail }),
+            });
           }
           continue;
         }
@@ -260,8 +321,12 @@ export async function syndicate(posts, live, now = new Date()) {
         if (!result.id) throw new Error("Publication response had no ID");
         await ledger.record(result.id);
         results.push({ slug, channel, status: "published" });
-      } catch {
-        results.push({ slug, channel, status: claimed ? "needs-review" : "configuration-or-service-error" });
+      } catch (error) {
+        const detail = error instanceof Error && error.message ? error.message.slice(0, 300) : undefined;
+        results.push({
+          slug, channel, status: claimed ? "needs-review" : "configuration-or-service-error",
+          ...(detail && { detail }),
+        });
       }
     }
   }

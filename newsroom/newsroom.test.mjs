@@ -6,7 +6,7 @@ import { join } from "node:path";
 import { test } from "node:test";
 import { discover } from "./discover.mjs";
 import { handleInstagramEvent, instagramEvents, replyText, signatureMatches } from "./inbox.mjs";
-import { approvedPosts, syndicate, verifyTargets } from "./publish.mjs";
+import { approvedPosts, imageDimensions, syndicate, verifyTargets } from "./publish.mjs";
 import { publicationLedger } from "./publication-ledger.mjs";
 import { handleTelegramCommunityUpdate } from "./telegram-community.mjs";
 import { matchesTelegramSecret, moderateTelegramUpdate } from "./telegram-moderation.mjs";
@@ -533,6 +533,20 @@ test("Telegram tips and same-group reports reach only the group owner", async (t
   assert.match(outbound[6].text, /sent privately/);
 });
 
+function jpegFixture(width, height) {
+  const bytes = new Uint8Array(15);
+  const view = new DataView(bytes.buffer);
+  view.setUint16(0, 0xffd8);
+  view.setUint16(2, 0xffc0);
+  view.setUint16(4, 11);
+  bytes[6] = 8;
+  view.setUint16(7, height);
+  view.setUint16(9, width);
+  bytes[11] = 3;
+  view.setUint16(13, 0xffd9);
+  return bytes;
+}
+
 test("Blotato verifies both handles, preserves pending receipts, and never re-submits a post", async (t) => {
   const receipt = "af1b2c3d-e5f6-7890-abcd-ef1234567890";
   const accounts = { tiktok: ["70380", "jamaicabasketball"], twitter: ["29127", "JamaicaBasketb1"] };
@@ -542,10 +556,12 @@ test("Blotato verifies both handles, preserves pending receipts, and never re-su
     ...redisEnv, ...metaEnv, NEWSROOM_PUBLISH_CHANNELS: "tiktok,twitter",
     BLOTATO_API_KEY: "fixture", BLOTATO_TIKTOK_ACCOUNT_ID: "70380",
     BLOTATO_TWITTER_ACCOUNT_ID: "29127", BLOTATO_START_DATE: "2026-11-20",
+    BLOTATO_POLL_MS: "0",
   }, (url, options) => {
     if (url.origin === site) {
-      if (options.method === "HEAD") {
-        return new Response(null, { headers: { "content-type": "image/jpeg", "content-length": "15000" } });
+      if (url.pathname === featuredPhoto) {
+        const headers = { "content-type": "image/jpeg", "content-length": "15000" };
+        return new Response(options.method === "HEAD" ? null : jpegFixture(1080, 1080), { headers });
       }
       return livePost(featuredPhoto);
     }
@@ -578,4 +594,60 @@ test("Blotato verifies both handles, preserves pending receipts, and never re-su
   assert.deepEqual((await syndicate([today], true, now)).map((item) => item.status), ["published", "published"]);
   assert.deepEqual((await syndicate([today], true, now)).map((item) => item.status), ["already-published", "already-published"]);
   assert.equal(submissions.length, 2);
+});
+
+test("TikTok rejects photos outside 1080p limits and surfaces Blotato failure details", async (t) => {
+  const receipt = "e4ab3c2d-73e9-4872-9990-bc296a362172";
+  let photoBytes = jpegFixture(1600, 1187);
+  let blotatoCalls = 0;
+  let statusChecks = 0;
+  const ledger = mockedProviders(t, {
+    ...redisEnv, ...metaEnv, NEWSROOM_PUBLISH_CHANNELS: "tiktok",
+    BLOTATO_API_KEY: "fixture", BLOTATO_TIKTOK_ACCOUNT_ID: "70380",
+    BLOTATO_START_DATE: "2026-11-20", BLOTATO_POLL_MS: "0",
+  }, (url, options) => {
+    if (url.origin === site) {
+      if (url.pathname === featuredPhoto) {
+        const headers = { "content-type": "image/jpeg", "content-length": String(photoBytes.byteLength) };
+        return new Response(options.method === "HEAD" ? null : photoBytes, { headers });
+      }
+      return livePost(featuredPhoto);
+    }
+    blotatoCalls++;
+    if (url.pathname === "/v2/users/me/accounts") {
+      return Response.json({ items: [{ id: "70380", platform: "tiktok", username: "jamaicabasketball" }] });
+    }
+    if (url.pathname === "/v2/posts") return Response.json({ postSubmissionId: receipt });
+    assert.equal(url.pathname, `/v2/posts/${receipt}`);
+    statusChecks++;
+    if (statusChecks === 1) return Response.json({ postSubmissionId: receipt, status: "in-progress" });
+    return Response.json({
+      postSubmissionId: receipt,
+      status: "failed",
+      errorMessage: "Unsupported picture size. Check TikTok's Video and Photo Restrictions.",
+    });
+  });
+
+  const now = new Date("2026-11-20T16:00:00Z");
+  const today = { ...approvedPost, date: "2026-11-20", title: "Jamaica basketball results", excerpt: "A verified game recap." };
+  assert.deepEqual(await syndicate([today], true, now), [
+    { slug: "approved", channel: "tiktok", status: "waiting-for-tiktok-photo" },
+  ]);
+  photoBytes = jpegFixture(320, 320);
+  assert.deepEqual(await syndicate([today], true, now), [
+    { slug: "approved", channel: "tiktok", status: "waiting-for-tiktok-photo" },
+  ]);
+  assert.equal(blotatoCalls, 0);
+  assert.equal(ledger.size, 0);
+
+  photoBytes = jpegFixture(1455, 1080);
+  assert.deepEqual(imageDimensions(photoBytes, "image/jpeg"), { width: 1455, height: 1080 });
+  assert.deepEqual(await syndicate([today], true, now), [{
+    slug: "approved",
+    channel: "tiktok",
+    status: "needs-review",
+    submissionId: receipt,
+    detail: "failed: Unsupported picture size. Check TikTok's Video and Photo Restrictions.",
+  }]);
+  assert.equal(statusChecks, 2);
 });
